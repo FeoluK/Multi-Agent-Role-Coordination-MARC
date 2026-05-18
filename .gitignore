@@ -1,0 +1,14 @@
+# envs / caches
+envs/
+__pycache__/
+*.pyc
+.DS_Store
+.ipynb_checkpoints/
+
+# results stay on FarmShare, not in git
+results/
+logs/
+*.npz
+/tmp/
+
+# keep: results_gifs/ (curated checkpoint rollouts) — tracked on purpose

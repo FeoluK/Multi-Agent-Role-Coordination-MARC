@@ -1,0 +1,410 @@
+loaded 182 runs across 68 cells from /scratch/users/flukol/marc/results
+
+======================================================================
+OVERCOOKED  (5 layouts pooled): vanilla vs marc
+======================================================================
+
+--- eval_return  (seeds/task: vanilla=[3, 3, 3, 3, 3]; marc=[3, 3, 3, 3, 3])
+  vanilla      IQM  239.583 [ 233.056, 245.347]   mean  271.083 [ 264.333, 277.938]
+  marc         IQM  232.465 [ 231.181, 233.333]   mean  197.396 [ 190.750, 201.688]
+  P(marc > vanilla) = 0.344 [0.233,0.467]  *
+
+--- final_return  (seeds/task: vanilla=[3, 3, 3, 3, 3]; marc=[3, 3, 3, 3, 3])
+  vanilla      IQM  239.527 [ 233.326, 245.050]   mean  270.563 [ 264.177, 277.392]
+  marc         IQM  232.036 [ 230.152, 233.243]   mean  197.142 [ 190.124, 201.837]
+  P(marc > vanilla) = 0.311 [0.178,0.444]  *
+
+--- role_similarity  (seeds/task: vanilla=[0, 0, 0, 0, 0]; marc=[3, 3, 3, 3, 3])
+  vanilla      IQM      nan [     nan,     nan]   mean      nan [     nan,     nan]
+  marc         IQM    0.148 [  -0.279,   0.378]   mean    0.090 [  -0.162,   0.228]
+  P(marc > vanilla) = nan [nan,nan]
+
+--- loo_drop_min  (seeds/task: vanilla=[3, 3, 3, 3, 3]; marc=[3, 3, 3, 3, 3])
+  vanilla      IQM  239.028 [ 232.186, 244.826]   mean  270.208 [ 264.146, 276.458]
+  marc         IQM  211.389 [ 196.528, 222.049]   mean  184.750 [ 175.792, 193.521]
+  P(marc > vanilla) = 0.311 [0.200,0.400]  *
+
+======================================================================
+OVERCOOKED pooled: vanilla vs marc-full vs marc-ARCH-ONLY (lam0, the MPE-winning config)
+======================================================================
+
+--- eval_return  (seeds/task: vanilla=[3, 3, 3, 3, 3]; marc_full=[3, 3, 3, 3, 3]; marc_arch=[0, 3, 3, 3, 0, 1, 0, 3, 0, 3, 0, 0, 3, 0, 0])
+  vanilla      IQM  239.583 [ 233.056, 245.104]   mean  271.083 [ 264.479, 278.146]
+  marc_full    IQM  232.465 [ 231.181, 233.333]   mean  197.396 [ 190.771, 201.708]
+  marc_arch    IQM  236.335 [ 221.534, 247.415]   mean  272.434 [ 264.588, 279.458]
+  P(marc_full > vanilla) = 0.344 [0.233,0.467]  *
+  P(marc_arch > vanilla) = 0.333 [0.333,0.333]  *
+
+--- final_return  (seeds/task: vanilla=[3, 3, 3, 3, 3]; marc_full=[3, 3, 3, 3, 3]; marc_arch=[0, 3, 3, 3, 0, 1, 0, 3, 0, 3, 0, 0, 3, 0, 0])
+  vanilla      IQM  239.527 [ 233.332, 245.076]   mean  270.563 [ 264.049, 277.499]
+  marc_full    IQM  232.036 [ 230.176, 233.238]   mean  197.142 [ 190.118, 201.829]
+  marc_arch    IQM  235.694 [ 221.160, 246.705]   mean  271.899 [ 263.858, 278.874]
+  P(marc_full > vanilla) = 0.311 [0.178,0.444]  *
+  P(marc_arch > vanilla) = 0.333 [0.333,0.333]  *
+
+--- behavioral_sep  (seeds/task: vanilla=[0, 0, 0, 0, 0]; marc_full=[0, 0, 0, 0, 0]; marc_arch=[0, 3, 0, 0, 0, 0, 0, 3, 0, 1, 0, 0, 2, 0, 0])
+  vanilla      IQM      nan [     nan,     nan]   mean      nan [     nan,     nan]
+  marc_full    IQM      nan [     nan,     nan]   mean      nan [     nan,     nan]
+  marc_arch    IQM    0.001 [   0.000,   0.006]   mean    0.004 [   0.002,   0.007]
+  P(marc_full > vanilla) = nan [nan,nan]
+  P(marc_arch > vanilla) = nan [nan,nan]
+
+--- role_similarity  (seeds/task: vanilla=[0, 0, 0, 0, 0]; marc_full=[3, 3, 3, 3, 3]; marc_arch=[0, 3, 3, 3, 0, 1, 0, 3, 0, 3, 0, 0, 3, 0, 0])
+  vanilla      IQM      nan [     nan,     nan]   mean      nan [     nan,     nan]
+  marc_full    IQM    0.148 [  -0.277,   0.378]   mean    0.090 [  -0.163,   0.228]
+  marc_arch    IQM    0.730 [   0.686,   0.773]   mean    0.724 [   0.686,   0.763]
+  P(marc_full > vanilla) = nan [nan,nan]
+  P(marc_arch > vanilla) = nan [nan,nan]
+
+--- loo_drop_min  (seeds/task: vanilla=[3, 3, 3, 3, 3]; marc_full=[3, 3, 3, 3, 3]; marc_arch=[0, 3, 3, 3, 0, 1, 0, 3, 0, 3, 0, 0, 3, 0, 0])
+  vanilla      IQM  239.028 [ 232.291, 244.826]   mean  270.208 [ 264.146, 276.313]
+  marc_full    IQM  211.389 [ 196.493, 222.014]   mean  184.750 [ 175.750, 193.500]
+  marc_arch    IQM  202.415 [ 181.022, 219.744]   mean  237.944 [ 223.684, 253.471]
+  P(marc_full > vanilla) = 0.311 [0.200,0.400]  *
+  P(marc_arch > vanilla) = 0.333 [0.333,0.333]  *
+
+======================================================================
+OVERCOOKED  layout=cramped_room
+======================================================================
+
+--- eval_return  (seeds/task: vanilla=[3]; marc=[3]; marc_arch=[0, 3, 3])
+  vanilla      IQM  240.000 [ 240.000, 240.000]   mean  240.000 [ 240.000, 240.000]
+  marc         IQM  239.688 [ 239.375, 240.000]   mean  239.688 [ 239.375, 240.000]
+  marc_arch    IQM  239.531 [ 239.375, 239.844]   mean  239.583 [ 239.375, 239.792]
+  P(marc > vanilla) = 0.167 [0.000,0.500]
+  P(marc_arch > vanilla) = nan [nan,nan]
+
+--- final_return  (seeds/task: vanilla=[3]; marc=[3]; marc_arch=[0, 3, 3])
+  vanilla      IQM  239.873 [ 239.668, 240.000]   mean  239.873 [ 239.668, 240.000]
+  marc         IQM  239.463 [ 239.228, 239.844]   mean  239.463 [ 239.228, 239.844]
+  marc_arch    IQM  239.246 [ 238.794, 239.665]   mean  239.233 [ 238.871, 239.599]
+  P(marc > vanilla) = 0.111 [0.000,0.444]  *
+  P(marc_arch > vanilla) = nan [nan,nan]
+
+--- behavioral_sep  (seeds/task: vanilla=[0]; marc=[0]; marc_arch=[0, 3, 0])
+  vanilla      IQM      nan [     nan,     nan]   mean      nan [     nan,     nan]
+  marc         IQM      nan [     nan,     nan]   mean      nan [     nan,     nan]
+  marc_arch    IQM    0.000 [   0.000,   0.000]   mean    0.000 [   0.000,   0.000]
+  P(marc > vanilla) = nan [nan,nan]
+  P(marc_arch > vanilla) = nan [nan,nan]
+
+--- role_similarity  (seeds/task: vanilla=[0]; marc=[3]; marc_arch=[0, 3, 3])
+  vanilla      IQM      nan [     nan,     nan]   mean      nan [     nan,     nan]
+  marc         IQM    0.995 [   0.985,   1.000]   mean    0.995 [   0.985,   1.000]
+  marc_arch    IQM    0.800 [   0.734,   0.849]   mean    0.796 [   0.747,   0.844]
+  P(marc > vanilla) = nan [nan,nan]
+  P(marc_arch > vanilla) = nan [nan,nan]
+
+--- loo_drop_min  (seeds/task: vanilla=[3]; marc=[3]; marc_arch=[0, 3, 3])
+  vanilla      IQM  238.646 [ 237.812, 239.375]   mean  238.646 [ 237.812, 239.375]
+  marc         IQM  176.458 [ 131.562, 208.438]   mean  176.458 [ 131.562, 208.438]
+  marc_arch    IQM  128.203 [  93.281, 184.766]   mean  134.219 [  94.427, 174.010]
+  P(marc > vanilla) = 0.000 [0.000,0.000]  *
+  P(marc_arch > vanilla) = nan [nan,nan]
+
+======================================================================
+OVERCOOKED  layout=asymm_advantages
+======================================================================
+
+--- eval_return  (seeds/task: vanilla=[3]; marc=[3]; marc_arch=[3, 0, 1])
+  vanilla      IQM  490.417 [ 482.188, 496.562]   mean  490.417 [ 482.188, 496.562]
+  marc         IQM  260.208 [ 260.000, 260.625]   mean  260.208 [ 260.000, 260.625]
+  marc_arch    IQM  475.938 [ 470.312, 475.938]   mean  475.078 [ 472.265, 476.485]
+  P(marc > vanilla) = 0.000 [0.000,0.000]  *
+  P(marc_arch > vanilla) = 0.000 [0.000,0.000]  *
+
+--- final_return  (seeds/task: vanilla=[3]; marc=[3]; marc_arch=[3, 0, 1])
+  vanilla      IQM  488.468 [ 479.171, 494.825]   mean  488.468 [ 479.171, 494.825]
+  marc         IQM  260.205 [ 260.000, 260.605]   mean  260.205 [ 260.000, 260.605]
+  marc_arch    IQM  474.483 [ 471.964, 475.333]   mean  474.700 [ 473.441, 475.967]
+  P(marc > vanilla) = 0.000 [0.000,0.000]  *
+  P(marc_arch > vanilla) = 0.000 [0.000,0.000]  *
+
+--- role_similarity  (seeds/task: vanilla=[0]; marc=[3]; marc_arch=[3, 0, 1])
+  vanilla      IQM      nan [     nan,     nan]   mean      nan [     nan,     nan]
+  marc         IQM   -0.905 [  -0.984,  -0.851]   mean   -0.905 [  -0.984,  -0.851]
+  marc_arch    IQM    0.602 [   0.446,   0.683]   mean    0.583 [   0.486,   0.664]
+  P(marc > vanilla) = nan [nan,nan]
+  P(marc_arch > vanilla) = nan [nan,nan]
+
+--- loo_drop_min  (seeds/task: vanilla=[3]; marc=[3]; marc_arch=[3, 0, 1])
+  vanilla      IQM  490.417 [ 482.188, 496.562]   mean  490.417 [ 482.188, 496.562]
+  marc         IQM  260.208 [ 260.000, 260.625]   mean  260.208 [ 260.000, 260.625]
+  marc_arch    IQM  475.781 [ 470.312, 475.938]   mean  475.000 [ 472.265, 476.485]
+  P(marc > vanilla) = 0.000 [0.000,0.000]  *
+  P(marc_arch > vanilla) = 0.000 [0.000,0.000]  *
+
+======================================================================
+OVERCOOKED  layout=coord_ring
+======================================================================
+
+--- eval_return  (seeds/task: vanilla=[3]; marc=[3]; marc_arch=[0, 3, 0])
+  vanilla      IQM  287.083 [ 267.500, 300.312]   mean  287.083 [ 267.500, 300.312]
+  marc         IQM  287.395 [ 254.062, 309.062]   mean  287.395 [ 254.062, 309.062]
+  marc_arch    IQM  254.375 [ 200.000, 295.312]   mean  254.375 [ 200.000, 295.312]
+  P(marc > vanilla) = 0.556 [0.000,1.000]
+  P(marc_arch > vanilla) = nan [nan,nan]
+
+--- final_return  (seeds/task: vanilla=[3]; marc=[3]; marc_arch=[0, 3, 0])
+  vanilla      IQM  286.670 [ 268.068, 298.623]   mean  286.670 [ 268.068, 298.623]
+  marc         IQM  286.475 [ 251.221, 310.098]   mean  286.475 [ 251.221, 310.098]
+  marc_arch    IQM  253.087 [ 199.483, 293.651]   mean  253.087 [ 199.483, 293.651]
+  P(marc > vanilla) = 0.556 [0.000,1.000]
+  P(marc_arch > vanilla) = nan [nan,nan]
+
+--- behavioral_sep  (seeds/task: vanilla=[0]; marc=[0]; marc_arch=[0, 3, 0])
+  vanilla      IQM      nan [     nan,     nan]   mean      nan [     nan,     nan]
+  marc         IQM      nan [     nan,     nan]   mean      nan [     nan,     nan]
+  marc_arch    IQM    0.005 [   0.001,   0.014]   mean    0.005 [   0.001,   0.014]
+  P(marc > vanilla) = nan [nan,nan]
+  P(marc_arch > vanilla) = nan [nan,nan]
+
+--- role_similarity  (seeds/task: vanilla=[0]; marc=[3]; marc_arch=[0, 3, 0])
+  vanilla      IQM      nan [     nan,     nan]   mean      nan [     nan,     nan]
+  marc         IQM    1.000 [   1.000,   1.000]   mean    1.000 [   1.000,   1.000]
+  marc_arch    IQM    0.755 [   0.656,   0.935]   mean    0.755 [   0.656,   0.935]
+  P(marc > vanilla) = nan [nan,nan]
+  P(marc_arch > vanilla) = nan [nan,nan]
+
+--- loo_drop_min  (seeds/task: vanilla=[3]; marc=[3]; marc_arch=[0, 3, 0])
+  vanilla      IQM  286.771 [ 266.562, 300.312]   mean  286.771 [ 266.562, 300.312]
+  marc         IQM  287.395 [ 254.062, 309.062]   mean  287.395 [ 254.062, 309.062]
+  marc_arch    IQM  254.375 [ 200.000, 295.312]   mean  254.375 [ 200.000, 295.312]
+  P(marc > vanilla) = 0.556 [0.000,1.000]
+  P(marc_arch > vanilla) = nan [nan,nan]
+
+======================================================================
+OVERCOOKED  layout=forced_coord
+======================================================================
+
+--- eval_return  (seeds/task: vanilla=[3]; marc=[3]; marc_arch=[3, 0, 0])
+  vanilla      IQM  191.667 [ 179.688, 198.750]   mean  191.667 [ 179.688, 198.750]
+  marc         IQM  199.688 [ 199.375, 200.000]   mean  199.688 [ 199.375, 200.000]
+  marc_arch    IQM  199.271 [ 198.750, 199.688]   mean  199.271 [ 198.750, 199.688]
+  P(marc > vanilla) = 1.000 [1.000,1.000]  *
+  P(marc_arch > vanilla) = 0.944 [0.778,1.000]  *
+
+--- final_return  (seeds/task: vanilla=[3]; marc=[3]; marc_arch=[3, 0, 0])
+  vanilla      IQM  192.038 [ 179.854, 199.287]   mean  192.038 [ 179.854, 199.287]
+  marc         IQM  199.567 [ 198.965, 199.884]   mean  199.567 [ 198.965, 199.884]
+  marc_arch    IQM  198.855 [ 198.594, 199.336]   mean  198.855 [ 198.594, 199.336]
+  P(marc > vanilla) = 0.889 [0.556,1.000]  *
+  P(marc_arch > vanilla) = 0.778 [0.333,1.000]
+
+--- behavioral_sep  (seeds/task: vanilla=[0]; marc=[0]; marc_arch=[1, 0, 0])
+  vanilla      IQM      nan [     nan,     nan]   mean      nan [     nan,     nan]
+  marc         IQM      nan [     nan,     nan]   mean      nan [     nan,     nan]
+  marc_arch    IQM    0.018 [   0.018,   0.018]   mean    0.018 [   0.018,   0.018]
+  P(marc > vanilla) = nan [nan,nan]
+  P(marc_arch > vanilla) = nan [nan,nan]
+
+--- role_similarity  (seeds/task: vanilla=[0]; marc=[3]; marc_arch=[3, 0, 0])
+  vanilla      IQM      nan [     nan,     nan]   mean      nan [     nan,     nan]
+  marc         IQM   -0.996 [  -0.998,  -0.994]   mean   -0.996 [  -0.998,  -0.994]
+  marc_arch    IQM    0.739 [   0.584,   0.836]   mean    0.739 [   0.584,   0.836]
+  P(marc > vanilla) = nan [nan,nan]
+  P(marc_arch > vanilla) = nan [nan,nan]
+
+--- loo_drop_min  (seeds/task: vanilla=[3]; marc=[3]; marc_arch=[3, 0, 0])
+  vanilla      IQM  191.667 [ 179.688, 198.750]   mean  191.667 [ 179.688, 198.750]
+  marc         IQM  199.688 [ 199.375, 200.000]   mean  199.688 [ 199.375, 200.000]
+  marc_arch    IQM  199.271 [ 198.750, 199.688]   mean  199.271 [ 198.750, 199.688]
+  P(marc > vanilla) = 1.000 [1.000,1.000]  *
+  P(marc_arch > vanilla) = 0.944 [0.778,1.000]  *
+
+======================================================================
+OVERCOOKED  layout=counter_circuit
+======================================================================
+
+--- eval_return  (seeds/task: vanilla=[3]; marc=[3]; marc_arch=[3, 0, 0])
+  vanilla      IQM  146.250 [ 120.000, 178.750]   mean  146.250 [ 120.000, 178.750]
+  marc         IQM    0.000 [   0.000,   0.000]   mean    0.000 [   0.000,   0.000]
+  marc_arch    IQM  159.167 [ 139.688, 178.750]   mean  159.167 [ 139.688, 178.750]
+  P(marc > vanilla) = 0.000 [0.000,0.000]  *
+  P(marc_arch > vanilla) = 0.611 [0.111,1.000]
+
+--- final_return  (seeds/task: vanilla=[3]; marc=[3]; marc_arch=[3, 0, 0])
+  vanilla      IQM  145.765 [ 119.356, 178.233]   mean  145.765 [ 119.356, 178.233]
+  marc         IQM    0.000 [   0.000,   0.000]   mean    0.000 [   0.000,   0.000]
+  marc_arch    IQM  158.688 [ 139.951, 178.398]   mean  158.688 [ 139.951, 178.398]
+  P(marc > vanilla) = 0.000 [0.000,0.000]  *
+  P(marc_arch > vanilla) = 0.778 [0.333,1.000]
+
+--- behavioral_sep  (seeds/task: vanilla=[0]; marc=[0]; marc_arch=[2, 0, 0])
+  vanilla      IQM      nan [     nan,     nan]   mean      nan [     nan,     nan]
+  marc         IQM      nan [     nan,     nan]   mean      nan [     nan,     nan]
+  marc_arch    IQM    0.000 [   0.000,   0.000]   mean    0.000 [   0.000,   0.000]
+  P(marc > vanilla) = nan [nan,nan]
+  P(marc_arch > vanilla) = nan [nan,nan]
+
+--- role_similarity  (seeds/task: vanilla=[0]; marc=[3]; marc_arch=[3, 0, 0])
+  vanilla      IQM      nan [     nan,     nan]   mean      nan [     nan,     nan]
+  marc         IQM    0.354 [  -0.935,   1.000]   mean    0.354 [  -0.935,   1.000]
+  marc_arch    IQM    0.722 [   0.678,   0.758]   mean    0.722 [   0.678,   0.758]
+  P(marc > vanilla) = nan [nan,nan]
+  P(marc_arch > vanilla) = nan [nan,nan]
+
+--- loo_drop_min  (seeds/task: vanilla=[3]; marc=[3]; marc_arch=[3, 0, 0])
+  vanilla      IQM  143.542 [ 120.000, 170.625]   mean  143.542 [ 120.000, 170.625]
+  marc         IQM    0.000 [   0.000,   0.000]   mean    0.000 [   0.000,   0.000]
+  marc_arch    IQM  151.563 [ 139.688, 159.062]   mean  151.563 [ 139.688, 159.062]
+  P(marc > vanilla) = 0.000 [0.000,0.000]  *
+  P(marc_arch > vanilla) = 0.556 [0.000,1.000]
+
+======================================================================
+MPE simple_spread (N=3,6,9 pooled): vanilla vs marc-arch vs marc-normgateup
+======================================================================
+
+--- eval_return  (seeds/task: vanilla=[3, 3, 3]; marc_arch=[8, 8, 8]; marc_ngup=[8, 8, 6])
+  vanilla      IQM  -35.466 [ -35.635, -35.323]   mean  -36.082 [ -36.261, -35.917]
+  marc_arch    IQM  -29.921 [ -30.256, -29.658]   mean  -28.680 [ -29.102, -28.259]
+  marc_ngup    IQM  -25.412 [ -25.652, -25.216]   mean  -25.373 [ -25.620, -25.133]
+  P(marc_arch > vanilla) = 1.000 [1.000,1.000]  *
+  P(marc_ngup > vanilla) = 1.000 [1.000,1.000]  *
+
+--- final_return  (seeds/task: vanilla=[3, 3, 3]; marc_arch=[8, 8, 8]; marc_ngup=[8, 8, 6])
+  vanilla      IQM  -38.007 [ -38.203, -37.909]   mean  -38.781 [ -38.949, -38.608]
+  marc_arch    IQM  -31.062 [ -31.335, -30.808]   mean  -30.068 [ -30.423, -29.714]
+  marc_ngup    IQM  -26.316 [ -26.439, -26.211]   mean  -26.498 [ -26.794, -26.241]
+  P(marc_arch > vanilla) = 1.000 [1.000,1.000]  *
+  P(marc_ngup > vanilla) = 1.000 [1.000,1.000]  *
+
+--- behavioral_sep  (seeds/task: vanilla=[3, 3, 3]; marc_arch=[8, 8, 8]; marc_ngup=[8, 8, 6])
+  vanilla      IQM    0.001 [   0.000,   0.001]   mean    0.001 [   0.001,   0.001]
+  marc_arch    IQM    0.001 [   0.001,   0.001]   mean    0.001 [   0.001,   0.001]
+  marc_ngup    IQM    0.001 [   0.001,   0.001]   mean    0.001 [   0.001,   0.001]
+  P(marc_arch > vanilla) = 0.451 [0.271,0.646]
+  P(marc_ngup > vanilla) = 0.667 [0.465,0.845]
+
+--- role_similarity  (seeds/task: vanilla=[0, 0, 0]; marc_arch=[8, 8, 8]; marc_ngup=[8, 8, 6])
+  vanilla      IQM      nan [     nan,     nan]   mean      nan [     nan,     nan]
+  marc_arch    IQM    0.896 [   0.887,   0.900]   mean    0.821 [   0.800,   0.838]
+  marc_ngup    IQM   -0.189 [  -0.191,  -0.188]   mean   -0.203 [  -0.205,  -0.200]
+  P(marc_arch > vanilla) = nan [nan,nan]
+  P(marc_ngup > vanilla) = nan [nan,nan]
+
+--- loo_drop_min  (seeds/task: vanilla=[3, 3, 3]; marc_arch=[8, 8, 8]; marc_ngup=[8, 8, 6])
+  vanilla      IQM   -0.421 [  -0.657,  -0.398]   mean   -0.674 [  -0.865,  -0.467]
+  marc_arch    IQM    0.588 [   0.411,   0.762]   mean    0.945 [   0.835,   1.058]
+  marc_ngup    IQM    0.765 [   0.656,   0.844]   mean    1.033 [   0.938,   1.124]
+  P(marc_arch > vanilla) = 0.958 [0.875,1.000]  *
+  P(marc_ngup > vanilla) = 0.958 [0.875,1.000]  *
+
+======================================================================
+MPE simple_spread N=3
+======================================================================
+
+--- eval_return  (seeds/task: vanilla=[3]; marc_arch=[8]; marc_ngup=[8])
+  vanilla      IQM  -19.523 [ -19.645, -19.360]   mean  -19.523 [ -19.645, -19.360]
+  marc_arch    IQM  -10.994 [ -11.245, -10.621]   mean  -10.953 [ -11.180, -10.711]
+  marc_ngup    IQM  -10.378 [ -10.543, -10.185]   mean  -10.372 [ -10.528, -10.216]
+  P(marc_arch > vanilla) = 1.000 [1.000,1.000]  *
+  P(marc_ngup > vanilla) = 1.000 [1.000,1.000]  *
+
+--- final_return  (seeds/task: vanilla=[3]; marc_arch=[8]; marc_ngup=[8])
+  vanilla      IQM  -20.575 [ -20.668, -20.447]   mean  -20.575 [ -20.668, -20.447]
+  marc_arch    IQM  -11.719 [ -11.906, -11.317]   mean  -11.634 [ -11.848, -11.383]
+  marc_ngup    IQM  -11.047 [ -11.288, -10.758]   mean  -11.032 [ -11.215, -10.847]
+  P(marc_arch > vanilla) = 1.000 [1.000,1.000]  *
+  P(marc_ngup > vanilla) = 1.000 [1.000,1.000]  *
+
+--- behavioral_sep  (seeds/task: vanilla=[3]; marc_arch=[8]; marc_ngup=[8])
+  vanilla      IQM    0.001 [   0.001,   0.002]   mean    0.001 [   0.001,   0.002]
+  marc_arch    IQM    0.001 [   0.001,   0.001]   mean    0.001 [   0.001,   0.002]
+  marc_ngup    IQM    0.001 [   0.001,   0.002]   mean    0.001 [   0.001,   0.002]
+  P(marc_arch > vanilla) = 0.375 [0.000,0.833]
+  P(marc_ngup > vanilla) = 0.625 [0.208,1.000]
+
+--- role_similarity  (seeds/task: vanilla=[0]; marc_arch=[8]; marc_ngup=[8])
+  vanilla      IQM      nan [     nan,     nan]   mean      nan [     nan,     nan]
+  marc_arch    IQM    0.570 [   0.492,   0.624]   mean    0.553 [   0.495,   0.605]
+  marc_ngup    IQM   -0.427 [  -0.431,  -0.423]   mean   -0.427 [  -0.430,  -0.424]
+  P(marc_arch > vanilla) = nan [nan,nan]
+  P(marc_ngup > vanilla) = nan [nan,nan]
+
+--- loo_drop_min  (seeds/task: vanilla=[3]; marc_arch=[8]; marc_ngup=[8])
+  vanilla      IQM   -0.117 [  -0.166,  -0.089]   mean   -0.117 [  -0.166,  -0.089]
+  marc_arch    IQM    2.985 [   2.846,   3.135]   mean    2.987 [   2.878,   3.094]
+  marc_ngup    IQM    2.947 [   2.763,   3.159]   mean    2.964 [   2.820,   3.103]
+  P(marc_arch > vanilla) = 1.000 [1.000,1.000]  *
+  P(marc_ngup > vanilla) = 1.000 [1.000,1.000]  *
+
+======================================================================
+MPE simple_spread N=6
+======================================================================
+
+--- eval_return  (seeds/task: vanilla=[3]; marc_arch=[8]; marc_ngup=[8])
+  vanilla      IQM  -34.694 [ -34.881, -34.455]   mean  -34.694 [ -34.881, -34.455]
+  marc_arch    IQM  -31.551 [ -32.151, -31.076]   mean  -31.667 [ -32.089, -31.294]
+  marc_ngup    IQM  -29.353 [ -29.677, -28.946]   mean  -29.312 [ -29.612, -29.010]
+  P(marc_arch > vanilla) = 1.000 [1.000,1.000]  *
+  P(marc_ngup > vanilla) = 1.000 [1.000,1.000]  *
+
+--- final_return  (seeds/task: vanilla=[3]; marc_arch=[8]; marc_ngup=[8])
+  vanilla      IQM  -37.048 [ -37.303, -36.886]   mean  -37.048 [ -37.303, -36.886]
+  marc_arch    IQM  -32.474 [ -32.964, -31.966]   mean  -32.477 [ -32.816, -32.134]
+  marc_ngup    IQM  -30.179 [ -30.316, -29.937]   mean  -30.124 [ -30.256, -29.975]
+  P(marc_arch > vanilla) = 1.000 [1.000,1.000]  *
+  P(marc_ngup > vanilla) = 1.000 [1.000,1.000]  *
+
+--- behavioral_sep  (seeds/task: vanilla=[3]; marc_arch=[8]; marc_ngup=[8])
+  vanilla      IQM    0.000 [   0.000,   0.001]   mean    0.000 [   0.000,   0.001]
+  marc_arch    IQM    0.000 [   0.000,   0.000]   mean    0.000 [   0.000,   0.000]
+  marc_ngup    IQM    0.001 [   0.000,   0.001]   mean    0.001 [   0.000,   0.001]
+  P(marc_arch > vanilla) = 0.229 [0.000,0.521]
+  P(marc_ngup > vanilla) = 0.708 [0.417,0.938]
+
+--- role_similarity  (seeds/task: vanilla=[0]; marc_arch=[8]; marc_ngup=[8])
+  vanilla      IQM      nan [     nan,     nan]   mean      nan [     nan,     nan]
+  marc_arch    IQM    0.958 [   0.946,   0.964]   mean    0.956 [   0.949,   0.962]
+  marc_ngup    IQM   -0.124 [  -0.126,  -0.121]   mean   -0.123 [  -0.126,  -0.121]
+  P(marc_arch > vanilla) = nan [nan,nan]
+  P(marc_ngup > vanilla) = nan [nan,nan]
+
+--- loo_drop_min  (seeds/task: vanilla=[3]; marc_arch=[8]; marc_ngup=[8])
+  vanilla      IQM   -0.335 [  -0.354,  -0.311]   mean   -0.335 [  -0.354,  -0.311]
+  marc_arch    IQM    0.060 [  -0.220,   0.378]   mean    0.097 [  -0.129,   0.338]
+  marc_ngup    IQM    0.092 [  -0.154,   0.248]   mean    0.037 [  -0.141,   0.195]
+  P(marc_arch > vanilla) = 0.875 [0.625,1.000]  *
+  P(marc_ngup > vanilla) = 0.875 [0.625,1.000]  *
+
+======================================================================
+MPE simple_spread N=9
+======================================================================
+
+--- eval_return  (seeds/task: vanilla=[3]; marc_arch=[8]; marc_ngup=[6])
+  vanilla      IQM  -54.027 [ -54.591, -53.604]   mean  -54.027 [ -54.591, -53.604]
+  marc_arch    IQM  -43.336 [ -44.870, -41.842]   mean  -43.421 [ -44.636, -42.287]
+  marc_ngup    IQM  -40.070 [ -41.048, -39.235]   mean  -40.124 [ -40.911, -39.408]
+  P(marc_arch > vanilla) = 1.000 [1.000,1.000]  *
+  P(marc_ngup > vanilla) = 1.000 [1.000,1.000]  *
+
+--- final_return  (seeds/task: vanilla=[3]; marc_arch=[8]; marc_ngup=[6])
+  vanilla      IQM  -58.720 [ -59.201, -58.221]   mean  -58.720 [ -59.201, -58.221]
+  marc_arch    IQM  -45.908 [ -47.477, -44.845]   mean  -46.095 [ -47.097, -45.115]
+  marc_ngup    IQM  -42.091 [ -43.570, -41.211]   mean  -42.287 [ -43.313, -41.383]
+  P(marc_arch > vanilla) = 1.000 [1.000,1.000]  *
+  P(marc_ngup > vanilla) = 1.000 [1.000,1.000]  *
+
+--- behavioral_sep  (seeds/task: vanilla=[3]; marc_arch=[8]; marc_ngup=[6])
+  vanilla      IQM    0.001 [   0.000,   0.001]   mean    0.001 [   0.000,   0.001]
+  marc_arch    IQM    0.001 [   0.001,   0.001]   mean    0.001 [   0.001,   0.001]
+  marc_ngup    IQM    0.001 [   0.001,   0.001]   mean    0.001 [   0.001,   0.001]
+  P(marc_arch > vanilla) = 0.750 [0.438,1.000]
+  P(marc_ngup > vanilla) = 0.667 [0.333,1.000]
+
+--- role_similarity  (seeds/task: vanilla=[0]; marc_arch=[8]; marc_ngup=[6])
+  vanilla      IQM      nan [     nan,     nan]   mean      nan [     nan,     nan]
+  marc_arch    IQM    0.953 [   0.944,   0.961]   mean    0.953 [   0.946,   0.961]
+  marc_ngup    IQM   -0.011 [  -0.014,  -0.002]   mean   -0.009 [  -0.014,  -0.003]
+  P(marc_arch > vanilla) = nan [nan,nan]
+  P(marc_ngup > vanilla) = nan [nan,nan]
+
+--- loo_drop_min  (seeds/task: vanilla=[3]; marc_arch=[8]; marc_ngup=[6])
+  vanilla      IQM   -1.570 [  -2.153,  -0.934]   mean   -1.570 [  -2.153,  -0.934]
+  marc_arch    IQM   -0.311 [  -0.521,   0.049]   mean   -0.249 [  -0.461,  -0.017]
+  marc_ngup    IQM   -0.204 [  -0.435,   0.000]   mean   -0.212 [  -0.382,  -0.059]
+  P(marc_arch > vanilla) = 1.000 [1.000,1.000]  *
+  P(marc_ngup > vanilla) = 1.000 [1.000,1.000]  *
+
+( * = 95% CI excludes 0.5 -> statistically distinguishable )

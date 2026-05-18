@@ -1,0 +1,37 @@
+{
+  "tag": "cf_arch_mpe_spread_6",
+  "network_kind": "marc",
+  "layout": "mpe_spread_6",
+  "seed": 30,
+  "total_timesteps": 5000000.0,
+  "final_sparse_return": -31.94906997680664,
+  "max_return": -31.4343318939209,
+  "train_minutes": 28.2,
+  "device": "cuda:0",
+  "lambda_aux": 0,
+  "beta": 1.0,
+  "aux_norm": false,
+  "aux_anneal": "none",
+  "aux_gate": false,
+  "m_l_align": 67.0963,
+  "m_l_div": 0.9435,
+  "m_actor_loss": -0.0003,
+  "m_value_loss": 2.0984,
+  "m_aux_eff": 0.0,
+  "eval": {
+    "eval_return": -31.064,
+    "loo_drop": {
+      "agent_0": 0.46,
+      "agent_1": 0.816,
+      "agent_2": 0.508,
+      "agent_3": 0.836,
+      "agent_4": 0.96,
+      "agent_5": 1.208
+    },
+    "loo_drop_min": 0.46,
+    "loo_drop_mean": 0.798,
+    "role_similarity": 0.9466,
+    "behavioral_sep": 0.0003,
+    "eval_episodes": 64
+  }
+}

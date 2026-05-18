@@ -1,0 +1,34 @@
+# Validated IPPO hyperparams (identical to JaxMARL ippo_cnn_overcooked) +
+# MARC harness knobs. Task 4: NETWORK_KIND=vanilla must reproduce ~240 on
+# cramped_room. MARC-specific keys are added in later tasks.
+LR: 0.0005
+NUM_ENVS: 64
+NUM_STEPS: 256
+TOTAL_TIMESTEPS: 5.0e6
+UPDATE_EPOCHS: 4
+NUM_MINIBATCHES: 16
+GAMMA: 0.99
+GAE_LAMBDA: 0.95
+CLIP_EPS: 0.2
+ENT_COEF: 0.01
+VF_COEF: 0.5
+MAX_GRAD_NORM: 0.5
+ACTIVATION: relu
+REW_SHAPING_HORIZON: 2.5e6
+ANNEAL_LR: true
+SEED: 30
+NUM_SEEDS: 1
+
+# MARC harness
+ADAPTER: overcooked
+NETWORK_KIND: vanilla   # vanilla | marc_self | marc
+HISTORY: 16             # (obs,action) window length H
+LATENT_DIM: 32          # role latent Z
+
+# MARC aux losses (design §4): L_total = L_PPO + LAMBDA_AUX*(L_align + BETA*L_div)
+LAMBDA_AUX: 0.1         # ablation: 0 -> no aux supervision
+BETA: 1.0               # ablation: 0 -> no diversity (anti-redundancy) term
+ZERO_TEAMMATE: false    # ablation: true -> zero inferred teammate latents
+
+ENV_KWARGS:
+  layout: cramped_room

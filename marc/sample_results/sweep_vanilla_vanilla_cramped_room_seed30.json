@@ -1,0 +1,22 @@
+{
+  "tag": "sweep_vanilla",
+  "network_kind": "vanilla",
+  "layout": "cramped_room",
+  "seed": 30,
+  "total_timesteps": 5000000.0,
+  "final_sparse_return": 240.0,
+  "max_return": 240.0,
+  "train_minutes": 0.73,
+  "device": "cuda:0",
+  "eval": {
+    "eval_return": 240.0,
+    "loo_drop": {
+      "agent_0": 237.812,
+      "agent_1": 240.0
+    },
+    "loo_drop_min": 237.812,
+    "loo_drop_mean": 238.906,
+    "role_similarity": null,
+    "eval_episodes": 64
+  }
+}

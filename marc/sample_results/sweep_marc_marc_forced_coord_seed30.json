@@ -1,0 +1,22 @@
+{
+  "tag": "sweep_marc",
+  "network_kind": "marc",
+  "layout": "forced_coord",
+  "seed": 30,
+  "total_timesteps": 5000000.0,
+  "final_sparse_return": 199.8836669921875,
+  "max_return": 200.0,
+  "train_minutes": 29.4,
+  "device": "cuda:0",
+  "eval": {
+    "eval_return": 199.688,
+    "loo_drop": {
+      "agent_0": 199.688,
+      "agent_1": 199.688
+    },
+    "loo_drop_min": 199.688,
+    "loo_drop_mean": 199.688,
+    "role_similarity": -0.9982,
+    "eval_episodes": 64
+  }
+}
