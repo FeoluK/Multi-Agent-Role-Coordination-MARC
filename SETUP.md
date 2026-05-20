@@ -160,6 +160,54 @@ tail -f /scratch/users/<SUNET>/marc/logs/<job>_<id>.log
 
 ---
 
+## 4b. Modal (alternative cloud GPU backend, SMAX sweep)
+
+`modal_smax_scaling.py` at the repo root is a [Modal](https://modal.com/)
+app that runs the SMAX scaling sweep
+(`marc/smax_scaling_manifest.py`: vanilla IPPO vs MARC arch,
+{`smax_3m`, `smax_8m`, `smax_10m_vs_11m`}, seeds 30..39 — **60 runs**)
+without needing FarmShare. Same `marc/run.py` entry point per
+container, same JSON schema out, so `marc/rliable_report.py` consumes
+the results unchanged.
+
+Setup (one-time):
+
+```bash
+pip install modal     # in any local Python env (no GPU/JAX needed locally)
+modal token new       # browser-auth your account
+```
+
+Smoke first (one container, ~5 min on A10G, ~$0.10):
+
+```bash
+modal run modal_smax_scaling.py --smoke
+```
+
+Full sweep (60 runs, A10G default ≈ 120 GPU-hours @ $1.10/hr ≈ $130;
+finish wall-clock ~6 h with `--max-containers 20`):
+
+```bash
+modal run modal_smax_scaling.py
+modal run modal_smax_scaling.py --max-containers 16     # raise parallelism
+modal run modal_smax_scaling.py --gpu A100              # heavier GPU
+modal run modal_smax_scaling.py --indices 0,30          # subset
+```
+
+Pull results locally and analyze:
+
+```bash
+modal volume get marc-smax-results / ./modal_results
+python marc/rliable_report.py ./modal_results
+```
+
+The image pins `jax==0.4.36` cuda12 + JaxMARL @ the same commit
+`requirements.txt` does, so numerics match the FarmShare baselines.
+The `marc/` source is mounted at runtime (no rebuild on code edits).
+Per-cell `NUM_ENVS` overrides (e.g. `smax_10m_vs_11m` -> `NUM_ENVS=32`)
+are baked into the manifest, so no Modal-side tuning is needed.
+
+---
+
 ## 5. Analyze
 
 ```bash

@@ -40,6 +40,15 @@ OC_GROUPS_ARCH = {
     "marc_full": [("sweep_marc", l) for l in OC_LAYOUTS],
     "marc_arch": [(t, l) for l in OC_LAYOUTS for t in OC_LAM0_TAGS],
 }
+# SMAX scaling (Marines ladder), the cross-game N-scaling test.
+# (label, layout-key) pairs; layout-key matches what run.py writes.
+SMAX_CELLS = [("3m",         "smax_3m"),
+              ("8m",         "smax_8m"),
+              ("10m_vs_11m", "smax_10m_vs_11m")]
+SMAX_GROUPS = {
+    "vanilla":   [(f"smax_vanilla_{lay}", lay) for (_, lay) in SMAX_CELLS],
+    "marc_arch": [(f"smax_marc_{lay}",    lay) for (_, lay) in SMAX_CELLS],
+}
 # MPE simple_spread, scaling in team size N (the clean fixed-aux story).
 MPE_NS = [3, 6, 9]
 MPE_GROUPS = {
@@ -182,6 +191,13 @@ def main(results_dir):
              "mappo": [("mappo_oc", lay)],
              "cds": [("cds_oc", lay)]}
         report_block(f"OVERCOOKED  layout={lay}", cells, g, "vanilla")
+    report_block("SMAX scaling (3m/8m/10m_vs_11m pooled): "
+                 "vanilla vs marc-arch (the cross-game N-scaling test)",
+                 cells, SMAX_GROUPS, "vanilla")
+    for label, lay in SMAX_CELLS:
+        g = {"vanilla":   [(f"smax_vanilla_{lay}", lay)],
+             "marc_arch": [(f"smax_marc_{lay}",    lay)]}
+        report_block(f"SMAX  scenario={label}", cells, g, "vanilla")
     report_block("MPE simple_spread (N=3,6,9 pooled): "
                  "vanilla vs marc-arch vs marc-normgateup",
                  cells, MPE_GROUPS, "vanilla")

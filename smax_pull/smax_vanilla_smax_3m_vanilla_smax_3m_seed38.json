@@ -1,0 +1,34 @@
+{
+  "tag": "smax_vanilla_smax_3m",
+  "network_kind": "vanilla",
+  "layout": "smax_3m",
+  "seed": 38,
+  "total_timesteps": 5000000.0,
+  "final_sparse_return": 1.4442964792251587,
+  "max_return": 1.5420856475830078,
+  "train_minutes": 0.84,
+  "device": "cuda:0",
+  "lambda_aux": 0.1,
+  "beta": 1.0,
+  "aux_norm": false,
+  "aux_anneal": "none",
+  "aux_gate": false,
+  "m_l_align": 0.0,
+  "m_l_div": 0.0,
+  "m_actor_loss": -0.0002,
+  "m_value_loss": 0.0765,
+  "m_aux_eff": 0.0,
+  "eval": {
+    "eval_return": 1.788,
+    "loo_drop": {
+      "ally_0": -0.031,
+      "ally_1": -0.031,
+      "ally_2": -0.079
+    },
+    "loo_drop_min": -0.079,
+    "loo_drop_mean": -0.047,
+    "role_similarity": null,
+    "behavioral_sep": 0.0011,
+    "eval_episodes": 64
+  }
+}

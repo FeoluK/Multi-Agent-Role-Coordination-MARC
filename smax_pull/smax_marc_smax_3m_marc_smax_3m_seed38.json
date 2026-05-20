@@ -1,0 +1,34 @@
+{
+  "tag": "smax_marc_smax_3m",
+  "network_kind": "marc",
+  "layout": "smax_3m",
+  "seed": 38,
+  "total_timesteps": 5000000.0,
+  "final_sparse_return": 1.8718502521514893,
+  "max_return": 1.9016194343566895,
+  "train_minutes": 14.14,
+  "device": "cuda:0",
+  "lambda_aux": 0,
+  "beta": 1.0,
+  "aux_norm": false,
+  "aux_anneal": "none",
+  "aux_gate": false,
+  "m_l_align": 78.5818,
+  "m_l_div": 0.7201,
+  "m_actor_loss": -0.0011,
+  "m_value_loss": 0.1432,
+  "m_aux_eff": 0.0,
+  "eval": {
+    "eval_return": 3.692,
+    "loo_drop": {
+      "ally_0": 2.322,
+      "ally_1": 2.436,
+      "ally_2": 2.445
+    },
+    "loo_drop_min": 2.322,
+    "loo_drop_mean": 2.401,
+    "role_similarity": 0.702,
+    "behavioral_sep": 0.0004,
+    "eval_episodes": 64
+  }
+}

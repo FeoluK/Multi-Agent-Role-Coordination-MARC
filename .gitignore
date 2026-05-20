@@ -11,4 +11,8 @@ logs/
 *.npz
 /tmp/
 
+# Modal partial-pull leftovers from earlier OOM-debug attempts — junk.
+# The canonical clean SMAX pull lives in smax_pull/ (see RESULTS.md).
+modal_results/
+
 # keep: results_gifs/ (curated checkpoint rollouts) — tracked on purpose

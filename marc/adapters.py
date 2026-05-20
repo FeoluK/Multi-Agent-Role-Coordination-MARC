@@ -218,6 +218,69 @@ class MPEAdapter:
         return MLPEncoder(activation="relu")
 
 
+class SMAXAdapter:
+    """SMAX (StarCraft micro abstracted) — JaxMARL's >2-agent benchmark.
+    The cleanest non-MPE test of MARC's central 'gap grows with N'
+    hypothesis: pick a homogeneous symmetric Marines ladder so unit
+    composition is fixed and only team size varies (mirrors MPE
+    simple_spread N=3/6/9 in spirit).
+
+    Wrapped via HeuristicEnemySMAX so the trainable side is the
+    cooperative ally team (shared team reward) facing scripted enemy
+    units — single-team API matches how Overcooked/MPE expose agents.
+    Vector obs Box(-1,1,(obs_size,)) -> MLPEncoder (D=64), so MARC heads
+    are unchanged. Discrete actions per ally:
+        0..3  : 4 cardinal moves
+        4     : stop / hold position (the leave-one-out 'drop' no-op)
+        5..   : attack enemy_k  (one slot per enemy unit)
+    => action_dim = num_movement_actions + num_enemies = 5 + n_enemies.
+    """
+
+    SCENARIOS = {
+        # symmetric homogeneous (clean N-scaling ladder)
+        "smax_3m":         "3m",          # N=3
+        "smax_8m":         "8m",          # N=8
+        "smax_25m":        "25m",         # N=25 (heavy: needs NUM_ENVS<=8)
+        # asymmetric homogeneous (slightly off-spec; a harder middle cell)
+        "smax_5m_vs_6m":   "5m_vs_6m",
+        "smax_10m_vs_11m": "10m_vs_11m",
+        "smax_27m_vs_30m": "27m_vs_30m",
+        # mixed unit types (kept for completeness; not pure N-scaling)
+        "smax_2s3z":       "2s3z",
+        "smax_3s5z":       "3s5z",
+        "smax_3s_vs_5z":   "3s_vs_5z",
+        "smax_6h_vs_8z":   "6h_vs_8z",
+    }
+
+    def __init__(self, name="smax_3m"):
+        self.name = name
+        self._agent_id = name.endswith("_id")
+        base = name[:-3] if self._agent_id else name
+        if base not in self.SCENARIOS:
+            raise KeyError(f"unknown SMAX adapter {base!r}; "
+                           f"have {sorted(self.SCENARIOS)}")
+        self._scenario_name = self.SCENARIOS[base]
+        e = self.make_env()
+        self.num_agents = int(e.num_agents)         # = num_allies
+        # All allies share the same action space; pick ally_0.
+        self.action_dim = int(e.action_space(e.agents[0]).n)
+        self.noop_action = 4                         # 'stop' (see docstring)
+        self.teammate_obs_visible = True             # allies are in each obs
+
+    def make_env(self, **env_kwargs):
+        from jaxmarl.environments.smax import map_name_to_scenario
+        scenario = map_name_to_scenario(self._scenario_name)
+        env = jaxmarl.make("HeuristicEnemySMAX",
+                           scenario=scenario, **env_kwargs)
+        return AgentIDWrapper(env) if self._agent_id else env
+
+    def obs_shape(self, env):
+        return env.observation_space(env.agents[0]).shape
+
+    def obs_encoder(self) -> nn.Module:
+        return MLPEncoder(activation="relu")
+
+
 class CraftaxCoopAdapter:
     """MARC on Minecraft — the design §7.4 stub, realised.
 
@@ -303,6 +366,9 @@ ADAPTERS = {
 for _mpe in MPEAdapter.N_BY_NAME:
     ADAPTERS[_mpe] = (lambda n=_mpe: MPEAdapter(n))
     ADAPTERS[_mpe + "_id"] = (lambda n=_mpe: MPEAdapter(n + "_id"))
+for _smax in SMAXAdapter.SCENARIOS:
+    ADAPTERS[_smax] = (lambda n=_smax: SMAXAdapter(n))
+    ADAPTERS[_smax + "_id"] = (lambda n=_smax: SMAXAdapter(n + "_id"))
 
 
 def get_adapter(name: str) -> EnvAdapter:

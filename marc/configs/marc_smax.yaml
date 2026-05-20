@@ -1,0 +1,36 @@
+# SMAX scaling config — same PPO hyperparams as Overcooked / MPE so the
+# vanilla-vs-MARC comparison is controlled across envs (only ADAPTER
+# changes). HeuristicEnemySMAX: ally team is trainable (cooperative,
+# shared reward), enemies are scripted. Vector obs -> MLPEncoder.
+# Episodes are short (env max_steps=100), no shaped reward.
+#
+# Default ladder for the scaling sweep is set by the manifest:
+#   smax_3m  (N=3)  /  smax_8m  (N=8)  /  smax_10m_vs_11m  (N=10).
+# 25m is canonical SMAC but the rollout buffer (t_obs ~ NA*M*H*obs_size)
+# blows past 40 GB at NUM_ENVS=64 -> drop NUM_ENVS to <=8 if you add it.
+LR: 0.0005
+NUM_ENVS: 64
+NUM_STEPS: 256
+TOTAL_TIMESTEPS: 5.0e6
+UPDATE_EPOCHS: 4
+NUM_MINIBATCHES: 16
+GAMMA: 0.99
+GAE_LAMBDA: 0.95
+CLIP_EPS: 0.2
+ENT_COEF: 0.01
+VF_COEF: 0.5
+MAX_GRAD_NORM: 0.5
+ACTIVATION: relu
+REW_SHAPING_HORIZON: 2.5e6   # unused for SMAX (no shaped reward); harmless
+ANNEAL_LR: true
+SEED: 30
+NUM_SEEDS: 1
+
+ADAPTER: smax_3m
+NETWORK_KIND: vanilla
+HISTORY: 16
+LATENT_DIM: 32
+LAMBDA_AUX: 0.1
+BETA: 1.0
+ZERO_TEAMMATE: false
+ENV_KWARGS: {}
