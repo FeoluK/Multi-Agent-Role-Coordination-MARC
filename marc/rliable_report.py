@@ -205,6 +205,23 @@ def main(results_dir):
         g = {"vanilla":   [(f"smax_vanilla_{lay}", lay)],
              "marc_arch": [(f"smax_marc_{lay}",    lay)]}
         report_block(f"SMAX  scenario={label}", cells, g, "vanilla")
+    # SMAX 8m budget ladder (smax_followup_manifest.py): is the N=8 tie
+    # an undertraining artifact? Compare vanilla vs marc within each
+    # budget; track gap evolution as 5e6 -> 10e6 -> 20e6.
+    for label, suffix in [("5e6",  ""),
+                          ("10e6", "_10e6"),
+                          ("20e6", "_20e6")]:
+        g = {"vanilla":   [(f"smax_vanilla_smax_8m{suffix}", "smax_8m")],
+             "marc_arch": [(f"smax_marc_smax_8m{suffix}",    "smax_8m")]}
+        report_block(f"SMAX 8m budget={label}  (vanilla vs marc-arch)",
+                     cells, g, "vanilla")
+    # SMAX 2s3z compositional ablation: heterogeneous unit types make
+    # role-specialization a structural constraint — MARC's home turf if
+    # the homogeneous-Marines tie was "no redundancy to fix".
+    g = {"vanilla":   [("smax_vanilla_smax_2s3z", "smax_2s3z")],
+         "marc_arch": [("smax_marc_smax_2s3z",    "smax_2s3z")]}
+    report_block("SMAX 2s3z  (heterogeneous-unit ablation)",
+                 cells, g, "vanilla")
     report_block("MPE simple_spread (N=3,6,9 pooled): "
                  "vanilla vs marc-arch vs marc-normgateup",
                  cells, MPE_GROUPS, "vanilla")

@@ -1,20 +1,25 @@
-"""Modal app: MARC SMAX scaling sweep on cloud GPUs.
+"""Modal app: MARC SMAX sweeps on cloud GPUs.
 
-Fans the 60-run grid in `marc/smax_scaling_manifest.py` (vanilla IPPO vs
-MARC-architecture × {smax_3m, smax_8m, smax_10m_vs_11m} × seeds 30..39)
-out to Modal containers, one container per manifest index. Each
-container runs the same `marc/run.py` invocation a FarmShare `*.sbatch`
-would — so result `.json` / `.npz` files are byte-identical in schema
-to the existing MPE / Overcooked results and feed straight into
-`marc/rliable_report.py` with no analysis-code changes.
+Drives any MARC SMAX manifest (`marc/smax_*_manifest.py`), one container
+per manifest index. Each container runs the same `marc/run.py`
+invocation a FarmShare `*.sbatch` would — so result `.json` / `.npz`
+files are byte-identical in schema to the existing MPE / Overcooked
+results and feed straight into `marc/rliable_report.py` with no
+analysis-code changes.
 
 Usage (from the repo root, which is where this file lives):
 
-  modal run modal_smax_scaling.py                       # full 60-run sweep on A10G
+  # default: original 60-run scaling sweep
+  modal run modal_smax_scaling.py
   modal run modal_smax_scaling.py --smoke               # only idx 0, 50k steps (~5 min, ~$0.10)
   modal run modal_smax_scaling.py --indices 0,1,30,31   # subset of indices
-  modal run modal_smax_scaling.py --gpu A100            # heavier GPU
+  modal run modal_smax_scaling.py --gpu A100-80GB       # heavier GPU
   modal run modal_smax_scaling.py --max-containers 16   # raise/lower parallelism
+
+  # follow-up sweeps (budget ladder, 2s3z ablation, etc.) — pass the
+  # manifest filename (relative to marc/, must live in marc/):
+  modal run modal_smax_scaling.py \
+      --manifest smax_followup_manifest.py --gpu A100-80GB
 
 Pull results locally (the volume is keyed by name, so this works from
 anywhere with the same Modal account):
@@ -87,11 +92,15 @@ def _parse_spec(line: str) -> dict:
     volumes={RESULTS_DIR: results_vol},
     max_containers=8,                 # safe default; override via --max-containers
 )
-def run_one(idx: int, total_timesteps: float | None = None) -> dict:
+def run_one(idx: int,
+            manifest: str = "smax_scaling_manifest.py",
+            total_timesteps: float | None = None) -> dict:
     """One manifest index -> one MARC training run -> JSON+npz on the volume.
 
     Returns the parsed summary JSON (or a {warning} stub) so the local
     `.map()` driver can stream a one-line per-run report to the user.
+    `manifest` is the manifest filename inside /root/marc (any
+    smax_*_manifest.py with the same `spec(idx)` / `--count` API works).
     """
     import os
     import shlex
@@ -101,9 +110,9 @@ def run_one(idx: int, total_timesteps: float | None = None) -> dict:
 
     # 1. enumerate the spec from the manifest
     raw = subprocess.check_output(
-        ["python", "smax_scaling_manifest.py", str(idx)],
+        ["python", manifest, str(idx)],
         cwd=cwd, text=True).strip()
-    print(f"[modal idx={idx}] spec: {raw}", flush=True)
+    print(f"[modal idx={idx} {manifest}] spec: {raw}", flush=True)
     spec = _parse_spec(raw)
     spec_sets = shlex.split(spec.get("SETS", ""))
 
@@ -144,9 +153,14 @@ def main(
     indices: str = "",
     gpu: str = "A10G",
     max_containers: int = 8,
+    manifest: str = "smax_scaling_manifest.py",
 ):
-    """Drive the sweep from your laptop. No GPU/JAX needed locally — we
-    only call the manifest (pure stdlib) to enumerate indices."""
+    """Drive any SMAX manifest from your laptop. No GPU/JAX needed
+    locally — we only call the manifest (pure stdlib) to enumerate."""
+    manifest_path = REPO_ROOT / "marc" / manifest
+    if not manifest_path.exists():
+        raise SystemExit(f"manifest not found: {manifest_path}")
+
     # Resolve which indices to run.
     if indices:
         ids = [int(x) for x in indices.split(",") if x.strip()]
@@ -154,9 +168,7 @@ def main(
         ids = [0]
     else:
         n = int(subprocess.check_output(
-            [sys.executable,
-             str(REPO_ROOT / "marc" / "smax_scaling_manifest.py"),
-             "--count"],
+            [sys.executable, str(manifest_path), "--count"],
             text=True).strip())
         ids = list(range(n))
 
@@ -166,12 +178,12 @@ def main(
     if gpu != "A10G" or max_containers != 8:
         fn = fn.with_options(gpu=gpu, max_containers=max_containers)
 
-    print(f"[modal] launching {len(ids)} run(s) on {gpu} "
+    print(f"[modal] {manifest}: launching {len(ids)} run(s) on {gpu} "
           f"(max_containers={max_containers}, smoke={smoke})", flush=True)
 
     if smoke:
         # Tiny budget so the smoke is cheap (~5 min, ~$0.10 on A10G).
-        result = fn.remote(0, total_timesteps=50_000)
+        result = fn.remote(0, manifest=manifest, total_timesteps=50_000)
         print("[smoke result]", json.dumps(result, indent=2,
                                            default=str), flush=True)
         return
@@ -179,7 +191,9 @@ def main(
     # Stream completions as they finish.
     n_done = 0
     n_fail = 0
-    for r in fn.map(ids, return_exceptions=True):
+    # starmap accepts (idx, kwargs); use a generator of (idx, manifest=...)
+    inputs = [(i, manifest) for i in ids]
+    for r in fn.starmap(inputs, return_exceptions=True):
         if isinstance(r, Exception):
             n_fail += 1
             print(f"[fail] {type(r).__name__}: {r}", flush=True)
