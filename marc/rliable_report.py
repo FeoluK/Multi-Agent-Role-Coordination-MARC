@@ -75,14 +75,21 @@ METRICS = [
 
 
 def load(results_dir):
-    cells = {}  # (tag, layout) -> list[dict]
+    """Load runs from a directory of *.json. Each .json is either a
+    single run summary (the canonical one-file-per-run layout used on
+    FarmShare) OR a list of run summaries (the consolidated format used
+    in smax_pull/smax_results.json). Both paths produce the same
+    cells = {(tag, layout): [run, ...]} mapping."""
+    cells = {}
     for f in glob.glob(os.path.join(results_dir, "*.json")):
         try:
             d = json.load(open(f))
         except Exception:
             continue
-        k = (d.get("tag"), d.get("layout"))
-        cells.setdefault(k, []).append(d)
+        runs = d if isinstance(d, list) else [d]
+        for r in runs:
+            k = (r.get("tag"), r.get("layout"))
+            cells.setdefault(k, []).append(r)
     return cells
 
 
