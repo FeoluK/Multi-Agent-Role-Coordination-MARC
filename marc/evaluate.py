@@ -44,16 +44,16 @@ def eval_metrics(params, config, episodes=64, seed=12345):
     A = adapter.action_dim
     MASK = bool(getattr(adapter, "has_action_mask", False))
 
-    def _maybe_mask(pi, state):
-        """If the env has action masking (Hanabi), zero-out illegal-action
-        logits before sampling so eval rollouts don't waste on no-ops."""
-        if not MASK:
-            return pi
-        import distrax
-        avail = adapter.get_avail_actions(env, state)            # dict
-        avail_b = batchify(avail, env.agents, NA).astype(jnp.float32)
+    def _sample(pi, state, akey):
+        """Sample from pi, optionally masking illegal-action logits first.
+        Bypass distrax wrapping — sample directly via jax.random.categorical
+        on raw masked logits (matches JaxMARL's reference IPPO Hanabi)."""
         logits = pi.logits if hasattr(pi, "logits") else pi.distribution.logits
-        return distrax.Categorical(logits=logits - (1.0 - avail_b) * 1e10)
+        if MASK:
+            avail = adapter.get_avail_actions(env, state)        # dict
+            avail_b = batchify(avail, env.agents, NA).astype(jnp.float32)
+            logits = logits - (1.0 - avail_b) * 1e10
+        return jax.random.categorical(akey, logits, axis=-1)
 
     def policy(params, ob, obs_h, act_h, ep_len, akey, state):
         """-> (sampled_actions (NA,), z_self or None). Sampled, not greedy:
@@ -65,20 +65,20 @@ def eval_metrics(params, config, episodes=64, seed=12345):
             pi, _, aux = network.apply(
                 params, ow, act_h, m,
                 ow[tidx], act_h[tidx], m[tidx], compute_aux=False)
-            return _maybe_mask(pi, state).sample(seed=akey), aux["z_self"]
+            return _sample(pi, state, akey), aux["z_self"]
         if HIST:
             ow = jnp.concatenate([obs_h[:, 1:], ob[:, None]], axis=1)
             m = _pad_mask(ep_len + 1, H)
             pi, _, aux = network.apply(params, ow, act_h, m)
-            return _maybe_mask(pi, state).sample(seed=akey), aux["z_self"]
+            return _sample(pi, state, akey), aux["z_self"]
         if CENTRAL:
             pi, _ = network.apply(params, ob, _world_state(ob, n, E))
-            return _maybe_mask(pi, state).sample(seed=akey), None
+            return _sample(pi, state, akey), None
         if CDS:
             pi, _, _ = network.apply(params, ob)
-            return _maybe_mask(pi, state).sample(seed=akey), None
+            return _sample(pi, state, akey), None
         pi, _ = network.apply(params, ob)
-        return _maybe_mask(pi, state).sample(seed=akey), None
+        return _sample(pi, state, akey), None
 
     def run(params, drop_k):
         """One vmapped batch of E episodes. drop_k in [-1, n): force agent
