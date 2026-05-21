@@ -281,6 +281,86 @@ class SMAXAdapter:
         return MLPEncoder(activation="relu")
 
 
+class HanabiAdapter:
+    """Hanabi (cooperative imperfect-info card game) — JaxMARL's
+    *partial-observability* benchmark, the most structurally different
+    SMAC/MPE-alternative env we can throw at MARC.
+
+    N players (2..5) take TURNS playing 1 of:
+        play card_k    (hand_size options)
+        discard card_k (hand_size options)
+        hint color_c to player_p   ((N-1) * num_colors options)
+        hint rank_r  to player_p   ((N-1) * num_ranks options)
+        no-op (always last index)
+    => action_dim = 2*hand_size + (N-1)*(colors+ranks) + 1.
+
+    Crucial difference from Overcooked / MPE / SMAX: only the *current*
+    player's action is used per step (HanabiEnv discards the rest), but
+    JaxMARL's API still samples actions for all agents simultaneously,
+    so MARC's existing simultaneous-action training loop works unchanged.
+    Each agent acts ~1/N of the time, so per-agent sample efficiency is
+    N times worse than MPE — expect Hanabi to need more timesteps to
+    converge at higher N. Reward is shared (cooperative score in [0, 25]).
+
+    Obs is a long flat float vector (660-dim @ 2p up to ~1280-dim @ 5p);
+    routed through MLPEncoder (D=64) so MARC heads are unchanged.
+
+    Caveat (worth noting in the writeup): Hanabi's turn-based structure
+    naturally differentiates 'roles' by who's next to act, which dilutes
+    MARC's anti-redundancy mechanism a priori. This is a stress test of
+    cross-domain generalization, not a target environment.
+    """
+
+    N_BY_NAME = {
+        "hanabi":   2,         # default alias
+        "hanabi_2": 2,
+        "hanabi_3": 3,
+        "hanabi_4": 4,         # hand_size drops 5 -> 4 here vs <=3p
+        "hanabi_5": 5,
+    }
+
+    # No natural max_steps in HanabiGame; ~80 turns is a safe upper
+    # bound (50-card deck + 8 info tokens + 3 lives). evaluate.py reads
+    # env.max_steps for the eval scan, so we attach one in make_env.
+    EVAL_HORIZON = 100
+
+    def __init__(self, name="hanabi_2"):
+        self.name = name
+        self._agent_id = name.endswith("_id")
+        base = name[:-3] if self._agent_id else name
+        if base not in self.N_BY_NAME:
+            raise KeyError(f"unknown Hanabi adapter {base!r}; "
+                           f"have {sorted(self.N_BY_NAME)}")
+        self._N = self.N_BY_NAME[base]
+        e = self.make_env()
+        self.num_agents = int(e.num_agents)
+        # All players share the same action space; pick agent_0.
+        self.action_dim = int(e.action_space(e.agents[0]).n)
+        # HanabiEnv's last action is the no-op (see hanabi.py: # noop).
+        self.noop_action = self.action_dim - 1
+        # Other players' hands are visible (canonical Hanabi rule), but
+        # *your own* hand is hidden — partial-obs from each agent's view.
+        # The MARC inferencer still has signal: it sees teammates' obs
+        # histories, which include their visible hands and last actions.
+        self.teammate_obs_visible = True
+
+    def make_env(self, **env_kwargs):
+        kw = dict(num_agents=self._N)
+        kw.update(env_kwargs)
+        env = jaxmarl.make("hanabi", **kw)
+        # HanabiGame doesn't set max_steps; evaluate.py needs it for the
+        # eval rollout's lax.scan length. Attach a tractable upper bound.
+        if not hasattr(env, "max_steps"):
+            env.max_steps = self.EVAL_HORIZON
+        return AgentIDWrapper(env) if self._agent_id else env
+
+    def obs_shape(self, env):
+        return env.observation_space(env.agents[0]).shape
+
+    def obs_encoder(self) -> nn.Module:
+        return MLPEncoder(activation="relu")
+
+
 class CraftaxCoopAdapter:
     """MARC on Minecraft — the design §7.4 stub, realised.
 
@@ -369,6 +449,9 @@ for _mpe in MPEAdapter.N_BY_NAME:
 for _smax in SMAXAdapter.SCENARIOS:
     ADAPTERS[_smax] = (lambda n=_smax: SMAXAdapter(n))
     ADAPTERS[_smax + "_id"] = (lambda n=_smax: SMAXAdapter(n + "_id"))
+for _han in HanabiAdapter.N_BY_NAME:
+    ADAPTERS[_han] = (lambda n=_han: HanabiAdapter(n))
+    ADAPTERS[_han + "_id"] = (lambda n=_han: HanabiAdapter(n + "_id"))
 
 
 def get_adapter(name: str) -> EnvAdapter:

@@ -49,6 +49,14 @@ SMAX_GROUPS = {
     "vanilla":   [(f"smax_vanilla_{lay}", lay) for (_, lay) in SMAX_CELLS],
     "marc_arch": [(f"smax_marc_{lay}",    lay) for (_, lay) in SMAX_CELLS],
 }
+# Hanabi N-scaling — partial-info, turn-based card game; the most
+# structurally different cross-domain test. N=4 skipped (hand_size
+# changes, would confound a pure-N ladder).
+HANABI_CELLS = [("2p", "hanabi_2"), ("3p", "hanabi_3"), ("5p", "hanabi_5")]
+HANABI_GROUPS = {
+    "vanilla":   [(f"hanabi_vanilla_{lay}", lay) for (_, lay) in HANABI_CELLS],
+    "marc_arch": [(f"hanabi_marc_{lay}",    lay) for (_, lay) in HANABI_CELLS],
+}
 # MPE simple_spread, scaling in team size N (the clean fixed-aux story).
 MPE_NS = [3, 6, 9]
 MPE_GROUPS = {
@@ -208,20 +216,40 @@ def main(results_dir):
     # SMAX 8m budget ladder (smax_followup_manifest.py): is the N=8 tie
     # an undertraining artifact? Compare vanilla vs marc within each
     # budget; track gap evolution as 5e6 -> 10e6 -> 20e6.
-    for label, suffix in [("5e6",  ""),
-                          ("10e6", "_10e6"),
-                          ("20e6", "_20e6")]:
-        g = {"vanilla":   [(f"smax_vanilla_smax_8m{suffix}", "smax_8m")],
-             "marc_arch": [(f"smax_marc_smax_8m{suffix}",    "smax_8m")]}
+    # NB: the followup-manifest tags already include "_smax_8m", so the
+    # modal app's "{TAG}_{ADAPTER}" concatenation duplicates the adapter
+    # for budget cells (TAG ends with "_smax_8m_{budget}_smax_8m").
+    # The 5e6 cell uses the original-sweep tags (no duplication).
+    for label, vanilla_tag, marc_tag in [
+        ("5e6",  "smax_vanilla_smax_8m",
+                 "smax_marc_smax_8m"),
+        ("10e6", "smax_vanilla_smax_8m_10e6_smax_8m",
+                 "smax_marc_smax_8m_10e6_smax_8m"),
+        ("20e6", "smax_vanilla_smax_8m_20e6_smax_8m",
+                 "smax_marc_smax_8m_20e6_smax_8m"),
+    ]:
+        g = {"vanilla":   [(vanilla_tag, "smax_8m")],
+             "marc_arch": [(marc_tag,    "smax_8m")]}
         report_block(f"SMAX 8m budget={label}  (vanilla vs marc-arch)",
                      cells, g, "vanilla")
     # SMAX 2s3z compositional ablation: heterogeneous unit types make
     # role-specialization a structural constraint — MARC's home turf if
     # the homogeneous-Marines tie was "no redundancy to fix".
-    g = {"vanilla":   [("smax_vanilla_smax_2s3z", "smax_2s3z")],
-         "marc_arch": [("smax_marc_smax_2s3z",    "smax_2s3z")]}
+    g = {"vanilla":   [("smax_vanilla_smax_2s3z_smax_2s3z", "smax_2s3z")],
+         "marc_arch": [("smax_marc_smax_2s3z_smax_2s3z",    "smax_2s3z")]}
     report_block("SMAX 2s3z  (heterogeneous-unit ablation)",
                  cells, g, "vanilla")
+    # Hanabi N-scaling — cross-domain stress test (partial info, turn-
+    # based, discrete actions, shared score). The MARC mechanism is
+    # structurally weakest here (turn-based already differentiates
+    # roles), so a tie is the expected null hypothesis.
+    report_block("Hanabi N-scaling (2p/3p/5p pooled): "
+                 "vanilla vs marc-arch (cross-domain stress test)",
+                 cells, HANABI_GROUPS, "vanilla")
+    for label, lay in HANABI_CELLS:
+        g = {"vanilla":   [(f"hanabi_vanilla_{lay}", lay)],
+             "marc_arch": [(f"hanabi_marc_{lay}",    lay)]}
+        report_block(f"Hanabi  N={label}", cells, g, "vanilla")
     report_block("MPE simple_spread (N=3,6,9 pooled): "
                  "vanilla vs marc-arch vs marc-normgateup",
                  cells, MPE_GROUPS, "vanilla")

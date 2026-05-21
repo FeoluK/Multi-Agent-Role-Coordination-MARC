@@ -1,0 +1,42 @@
+# Hanabi config — same PPO hyperparams as Overcooked / MPE / SMAX so
+# the vanilla-vs-MARC comparison is controlled across envs (only ADAPTER
+# changes). Cooperative imperfect-info card game; turn-based but exposes
+# JaxMARL's simultaneous-action API (other agents' actions are dropped
+# per step). Vector obs (-> MLPEncoder), discrete actions, shared score
+# in [0, 25], no shaped reward.
+#
+# Default ladder for the scaling sweep is set by the manifest:
+#   hanabi_2  (N=2)  /  hanabi_3  (N=3)  /  hanabi_5  (N=5).
+# N=4 is skipped because hand_size drops 5->4 between N=3 and N=4 (a
+# confound on a clean N-only ladder); add it back for completeness if
+# hyperparam search is desired.
+#
+# Per-agent sample efficiency in Hanabi is ~1/N of the per-step rate
+# (only cur_player's action is used), so 5e6 timesteps may be tight at
+# N=5; bump TOTAL_TIMESTEPS via --set if undertraining shows up.
+LR: 0.0005
+NUM_ENVS: 64
+NUM_STEPS: 256
+TOTAL_TIMESTEPS: 5.0e6
+UPDATE_EPOCHS: 4
+NUM_MINIBATCHES: 16
+GAMMA: 0.99
+GAE_LAMBDA: 0.95
+CLIP_EPS: 0.2
+ENT_COEF: 0.01
+VF_COEF: 0.5
+MAX_GRAD_NORM: 0.5
+ACTIVATION: relu
+REW_SHAPING_HORIZON: 2.5e6   # unused for Hanabi (no shaped reward); harmless
+ANNEAL_LR: true
+SEED: 30
+NUM_SEEDS: 1
+
+ADAPTER: hanabi_2
+NETWORK_KIND: vanilla
+HISTORY: 16
+LATENT_DIM: 32
+LAMBDA_AUX: 0.1
+BETA: 1.0
+ZERO_TEAMMATE: false
+ENV_KWARGS: {}
