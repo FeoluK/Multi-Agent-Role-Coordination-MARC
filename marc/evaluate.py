@@ -42,8 +42,20 @@ def eval_metrics(params, config, episodes=64, seed=12345):
     tidx = _team_index(n, E) if TEAM else None
     noop = adapter.noop_action
     A = adapter.action_dim
+    MASK = bool(getattr(adapter, "has_action_mask", False))
 
-    def policy(params, ob, obs_h, act_h, ep_len, akey):
+    def _maybe_mask(pi, state):
+        """If the env has action masking (Hanabi), zero-out illegal-action
+        logits before sampling so eval rollouts don't waste on no-ops."""
+        if not MASK:
+            return pi
+        import distrax
+        avail = adapter.get_avail_actions(env, state)            # dict
+        avail_b = batchify(avail, env.agents, NA).astype(jnp.float32)
+        logits = pi.logits if hasattr(pi, "logits") else pi.distribution.logits
+        return distrax.Categorical(logits=logits - (1.0 - avail_b) * 1e10)
+
+    def policy(params, ob, obs_h, act_h, ep_len, akey, state):
         """-> (sampled_actions (NA,), z_self or None). Sampled, not greedy:
         deterministic Overcooked policies deadlock (0 return); the training /
         published return metric uses sampled actions."""
@@ -53,20 +65,20 @@ def eval_metrics(params, config, episodes=64, seed=12345):
             pi, _, aux = network.apply(
                 params, ow, act_h, m,
                 ow[tidx], act_h[tidx], m[tidx], compute_aux=False)
-            return pi.sample(seed=akey), aux["z_self"]
+            return _maybe_mask(pi, state).sample(seed=akey), aux["z_self"]
         if HIST:
             ow = jnp.concatenate([obs_h[:, 1:], ob[:, None]], axis=1)
             m = _pad_mask(ep_len + 1, H)
             pi, _, aux = network.apply(params, ow, act_h, m)
-            return pi.sample(seed=akey), aux["z_self"]
+            return _maybe_mask(pi, state).sample(seed=akey), aux["z_self"]
         if CENTRAL:
             pi, _ = network.apply(params, ob, _world_state(ob, n, E))
-            return pi.sample(seed=akey), None
+            return _maybe_mask(pi, state).sample(seed=akey), None
         if CDS:
             pi, _, _ = network.apply(params, ob)
-            return pi.sample(seed=akey), None
+            return _maybe_mask(pi, state).sample(seed=akey), None
         pi, _ = network.apply(params, ob)
-        return pi.sample(seed=akey), None
+        return _maybe_mask(pi, state).sample(seed=akey), None
 
     def run(params, drop_k):
         """One vmapped batch of E episodes. drop_k in [-1, n): force agent
@@ -83,7 +95,7 @@ def eval_metrics(params, config, episodes=64, seed=12345):
             ob = jnp.stack([obs[a] for a in env.agents]).reshape(
                 -1, *obs_shape)
             rng, ak, rs = jax.random.split(rng, 3)
-            act, z_self = policy(params, ob, obs_h, act_h, ep_len, ak)
+            act, z_self = policy(params, ob, obs_h, act_h, ep_len, ak, state)
             # behavioral role separation: per-agent action histogram (normal
             # mode only) -> JS divergence between agents. Works for vanilla
             # AND marc (no latent needed).
@@ -177,18 +189,29 @@ def collect_role_latents(params, config, episodes=16, seed=777):
     T = env.max_steps
     tidx = _team_index(n, E) if TEAM else None
 
-    def policy(params, ob, obs_h, act_h, ep_len, akey):
+    MASK = bool(getattr(adapter, "has_action_mask", False))
+
+    def _maybe_mask(pi, state):
+        if not MASK:
+            return pi
+        import distrax
+        avail = adapter.get_avail_actions(env, state)
+        avail_b = batchify(avail, env.agents, NA).astype(jnp.float32)
+        logits = pi.logits if hasattr(pi, "logits") else pi.distribution.logits
+        return distrax.Categorical(logits=logits - (1.0 - avail_b) * 1e10)
+
+    def policy(params, ob, obs_h, act_h, ep_len, akey, state):
         if TEAM:
             ow = jnp.concatenate([obs_h[:, 1:], ob[:, None]], axis=1)
             m = _pad_mask(ep_len + 1, H)
             pi, _, aux = network.apply(
                 params, ow, act_h, m,
                 ow[tidx], act_h[tidx], m[tidx], compute_aux=False)
-            return pi.sample(seed=akey), aux["z_self"]
+            return _maybe_mask(pi, state).sample(seed=akey), aux["z_self"]
         ow = jnp.concatenate([obs_h[:, 1:], ob[:, None]], axis=1)
         m = _pad_mask(ep_len + 1, H)
         pi, _, aux = network.apply(params, ow, act_h, m)
-        return pi.sample(seed=akey), aux["z_self"]
+        return _maybe_mask(pi, state).sample(seed=akey), aux["z_self"]
 
     def run(params):
         rng = jax.random.PRNGKey(seed)
@@ -203,7 +226,7 @@ def collect_role_latents(params, config, episodes=16, seed=777):
             ob = jnp.stack([obs[a] for a in env.agents]).reshape(
                 -1, *obs_shape)
             rng, ak, rs = jax.random.split(rng, 3)
-            act, z_self = policy(params, ob, obs_h, act_h, ep_len, ak)
+            act, z_self = policy(params, ob, obs_h, act_h, ep_len, ak, state)
             zs = z_self.reshape(n, E, -1)            # (n, E, Z)
             env_act = {k: v.flatten() for k, v in unbatchify(
                 act, env.agents, E, n).items()}

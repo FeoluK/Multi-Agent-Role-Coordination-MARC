@@ -8,10 +8,14 @@ vanilla IPPO vs MARC architecture (LAMBDA_AUX=0 — the winning Overcooked
 N=4 is skipped because Hanabi's hand_size drops from 5 (for N<=3) to 4
 (for N>=4), which would confound a clean 'only N varies' ladder.
 
-Per-cell NUM_ENVS overrides keep the rollout buffer in GPU memory.
-Hanabi's obs is large (~660-dim @ 2p, ~1280-dim @ 5p) and the MARC
-rollout buffer t_obs ~ NA*M*H*obs scales with N*N_obs(N), so 5p needs
-NUM_ENVS=32 to fit on A10G; A100-40GB / A100-80GB clear it at 64.
+NB v2: this revision (commit b82f937 onwards) adds illegal-action
+masking to train_marc.py / evaluate.py so the policy only samples
+legal Hanabi moves. Previous Hanabi runs at 5e6 timesteps without
+masking produced unreliable comparisons (both vanilla and marc trained
+against ~50% wasted samples per step). Bumping TOTAL_TIMESTEPS to 1e8
+(20x the previous Hanabi sweep, still 100x under JaxMARL reference's
+1e10 but within Modal-budget reach). PER_CELL_SETS overrides keep the
+rollout buffer fitting in GPU memory at N=5.
 
 Caveat (worth flagging in the writeup): Hanabi's turn-based structure
 naturally differentiates 'roles' by who's next to act, which dilutes
@@ -26,9 +30,18 @@ PER_CELL_SETS = {
 }
 ADAPTERS = ["hanabi_2", "hanabi_3", "hanabi_5"]
 SEEDS = list(range(30, 35))                     # 5 seeds per cell
+# 5e7 timesteps: 10x the previous 5e6 Hanabi sweep, ~3050 PPO updates
+# at NUM_ENVS=64/NUM_STEPS=256. Defensible: if MARC needs more budget
+# than vanilla to converge, 10x is a strong test. If MARC still loses
+# at 10x, that's consistent with the SMAX 8m budget-ladder finding
+# (MARC's heavier architecture is a real efficiency tax, not just an
+# undertraining artifact). JaxMARL's reference IPPO uses 1e10 at
+# NUM_ENVS=1024 NUM_STEPS=128 (~76k updates); we're at ~25x fewer
+# updates but with action masking now matching the reference recipe.
+HANABI_BUDGET_SETS = ["TOTAL_TIMESTEPS=5e7"]
 CONFIGS = [
-    ("hanabi_vanilla", "vanilla", []),
-    ("hanabi_marc",    "marc",    ["LAMBDA_AUX=0"]),
+    ("hanabi_vanilla", "vanilla", list(HANABI_BUDGET_SETS)),
+    ("hanabi_marc",    "marc",    ["LAMBDA_AUX=0", *HANABI_BUDGET_SETS]),
 ]
 RUNS = [(t, k, s_cfg + PER_CELL_SETS.get((k, ad), []), ad, sd)
         for (t, k, s_cfg) in CONFIGS

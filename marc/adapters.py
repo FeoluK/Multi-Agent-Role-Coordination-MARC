@@ -149,10 +149,15 @@ class EnvAdapter(Protocol):
     action_dim: int
     noop_action: int            # leave-one-out: action that "drops" an agent
     teammate_obs_visible: bool  # see design §2
+    # If True, the trainer queries get_avail_actions() each step and masks
+    # illegal-action logits before sample/log_prob/entropy. Default off so
+    # existing-env (Overcooked / MPE / SMAX) results stay byte-reproducible.
+    has_action_mask: bool = False
 
     def make_env(self, **env_kwargs): ...
     def obs_shape(self, env) -> tuple: ...
     def obs_encoder(self) -> nn.Module: ...
+    def get_avail_actions(self, env, env_state) -> dict: ...   # optional
 
 
 class OvercookedAdapter:
@@ -324,6 +329,12 @@ class HanabiAdapter:
     # env.max_steps for the eval scan, so we attach one in make_env.
     EVAL_HORIZON = 100
 
+    # Hanabi has illegal moves at most timesteps (e.g. hint with no info
+    # tokens, play card not in hand). JaxMARL's reference IPPO masks
+    # them; we follow suit. The trainer threads `avail` through the
+    # rollout so log_prob / entropy / sample all use the masked dist.
+    has_action_mask = True
+
     def __init__(self, name="hanabi_2"):
         self.name = name
         self._agent_id = name.endswith("_id")
@@ -343,6 +354,33 @@ class HanabiAdapter:
         # The MARC inferencer still has signal: it sees teammates' obs
         # histories, which include their visible hands and last actions.
         self.teammate_obs_visible = True
+
+    @staticmethod
+    def _unwrap(obj, attr):
+        """Drill through wrappers (LogWrapper, AgentIDWrapper, ...) to find
+        the deepest object that has `attr`."""
+        cur = obj
+        # try direct attr first
+        while not hasattr(cur, attr) and hasattr(cur, "_env"):
+            cur = cur._env
+        return cur
+
+    def get_avail_actions(self, env, env_state):
+        """Returns Dict[agent_name, jnp.ndarray (NUM_ENVS, action_dim) {0,1}]
+        of legal moves for the current game state, vmapped over the
+        rollout's parallel-env batch dim. Drills through LogWrapper /
+        AgentIDWrapper wrappers around both env and env_state.
+
+        HanabiEnv.get_legal_moves expects a single state, so we vmap it
+        — matching JaxMARL's reference ippo_ff_hanabi recipe."""
+        # LogWrapper stores the underlying state in .env_state; nest if
+        # multiple wrappers added it.
+        st = env_state
+        while hasattr(st, "env_state"):
+            st = st.env_state
+        e = self._unwrap(env, "get_legal_moves")
+        import jax
+        return jax.vmap(e.get_legal_moves)(st)
 
     def make_env(self, **env_kwargs):
         kw = dict(num_agents=self._N)

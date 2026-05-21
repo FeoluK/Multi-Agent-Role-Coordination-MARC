@@ -48,6 +48,7 @@ class Transition(NamedTuple):
     t_mask: jnp.ndarray       # marc: (A,M,H);      else dummy
     world_state: jnp.ndarray  # mappo: (A, n*flat); else dummy
     agent_id: jnp.ndarray     # cds: (A,) actor's agent index; else dummy
+    avail: jnp.ndarray        # action mask (A, action_dim) {0,1}; 1s if env doesn't mask
 
 
 def _team_index(n, E):
@@ -172,6 +173,23 @@ def make_train(config):
     env = LogWrapper(env, replace_info=False)
     obs_shape = adapter.obs_shape(env)
     NA = config["NUM_ACTORS"]
+    A = adapter.action_dim
+    # Adapter may declare an action mask (Hanabi). When True, the trainer
+    # queries adapter.get_avail_actions(env, env_state) each rollout step
+    # and masks pi.logits via -1e10 on illegal actions before sample /
+    # log_prob / entropy. Default False so existing-env results are
+    # unchanged. JaxMARL's reference IPPO Hanabi uses the same approach.
+    MASK = bool(getattr(adapter, "has_action_mask", False))
+
+    def _mask_pi(pi, avail):
+        """Return a Categorical with illegal-action logits set to -1e10.
+        Both pi.sample and pi.log_prob are computed from the masked dist
+        so PPO's actor loss / entropy / ratio are consistent with the
+        action that was actually sampled."""
+        import distrax
+        logits = pi.logits if hasattr(pi, "logits") else pi.distribution.logits
+        masked = logits - (1.0 - avail) * 1e10
+        return distrax.Categorical(logits=masked)
 
     rew_shaping_anneal = optax.linear_schedule(
         init_value=1.0, end_value=0.0,
@@ -274,6 +292,14 @@ def make_train(config):
                 else:
                     tow = taw = tm = jnp.zeros((NA, 1))  # dummies
 
+                if MASK:
+                    avail = adapter.get_avail_actions(env, env_state)
+                    avail_b = batchify(avail, env.agents, NA).astype(
+                        jnp.float32)
+                    pi = _mask_pi(pi, avail_b)
+                else:
+                    avail_b = jnp.ones((NA, A), dtype=jnp.float32)
+
                 action = pi.sample(seed=_rng)
                 log_prob = pi.log_prob(action)
                 env_act = {k: v.flatten() for k, v in unbatchify(
@@ -315,7 +341,7 @@ def make_train(config):
                 transition = Transition(
                     done_b, action, value, rew_b,
                     log_prob, stored_obs, info, aw, m, tow, taw, tm,
-                    ws, aid_b)
+                    ws, aid_b, avail_b)
 
                 if HIST:
                     obs_h = jnp.concatenate(
@@ -407,6 +433,8 @@ def make_train(config):
                         else:
                             pi, value = network.apply(params, tb.obs)
                             aux = {}
+                        if MASK:
+                            pi = _mask_pi(pi, tb.avail)
                         log_prob = pi.log_prob(tb.action)
                         vpc = tb.value + (value - tb.value).clip(
                             -config["CLIP_EPS"], config["CLIP_EPS"])
