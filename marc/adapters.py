@@ -355,7 +355,12 @@ class HanabiAdapter:
         return AgentIDWrapper(env) if self._agent_id else env
 
     def obs_shape(self, env):
-        return env.observation_space(env.agents[0]).shape
+        # JaxMARL's HanabiEnv constructs its Box space with shape=obs_size
+        # (a bare int) rather than (obs_size,), so .shape returns a
+        # scalar np.int64 instead of a tuple. Normalize to a 1-D tuple so
+        # train_marc.py's `tuple(obs_shape)` works.
+        s = env.observation_space(env.agents[0]).shape
+        return s if isinstance(s, tuple) else (int(s),)
 
     def obs_encoder(self) -> nn.Module:
         return MLPEncoder(activation="relu")
