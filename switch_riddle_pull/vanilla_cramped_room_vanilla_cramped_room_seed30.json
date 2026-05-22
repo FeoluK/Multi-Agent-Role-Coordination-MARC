@@ -1,0 +1,33 @@
+{
+  "tag": "vanilla_cramped_room",
+  "network_kind": "vanilla",
+  "layout": "cramped_room",
+  "seed": 30,
+  "total_timesteps": 50000,
+  "final_sparse_return": 1.051025390625,
+  "max_return": 2.1875,
+  "train_minutes": 0.36,
+  "device": "cuda:0",
+  "lambda_aux": 0.1,
+  "beta": 1.0,
+  "aux_norm": false,
+  "aux_anneal": "none",
+  "aux_gate": false,
+  "m_l_align": 0.0,
+  "m_l_div": 0.0,
+  "m_actor_loss": -0.0033,
+  "m_value_loss": 0.6471,
+  "m_aux_eff": 0.0,
+  "eval": {
+    "eval_return": 5.312,
+    "loo_drop": {
+      "agent_0": 4.375,
+      "agent_1": 5.0
+    },
+    "loo_drop_min": 4.375,
+    "loo_drop_mean": 4.688,
+    "role_similarity": null,
+    "behavioral_sep": 0.0,
+    "eval_episodes": 64
+  }
+}

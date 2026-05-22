@@ -1,0 +1,29 @@
+# Switch Riddle config — cooperative signalling task (Sukhbaatar et al. 2016).
+# Episodes are very short (max_steps = 4N-6: 6 steps at N=3, 10 at N=4).
+# Same PPO hyperparams as MPE; NUM_STEPS/NUM_ENVS tuned for short episodes.
+LR: 0.0005
+NUM_ENVS: 256
+NUM_STEPS: 32
+TOTAL_TIMESTEPS: 2.0e6
+UPDATE_EPOCHS: 4
+NUM_MINIBATCHES: 16
+GAMMA: 0.99
+GAE_LAMBDA: 0.95
+CLIP_EPS: 0.2
+ENT_COEF: 0.01
+VF_COEF: 0.5
+MAX_GRAD_NORM: 0.5
+ACTIVATION: relu
+REW_SHAPING_HORIZON: 2.5e6   # unused (no shaped reward); harmless
+ANNEAL_LR: true
+SEED: 30
+NUM_SEEDS: 1
+
+ADAPTER: switch_riddle_3
+NETWORK_KIND: vanilla
+HISTORY: 16
+LATENT_DIM: 32
+LAMBDA_AUX: 0.0
+BETA: 1.0
+ZERO_TEAMMATE: false
+ENV_KWARGS: {}

@@ -460,6 +460,51 @@ class CraftaxCoopAdapter:
         return CraftaxMLPEncoder(activation="relu")
 
 
+class SwitchRiddleAdapter:
+    """Switch Riddle (Sukhbaatar et al. 2016) — a minimal cooperative
+    signalling task. N agents take turns visiting a room with a light
+    switch; exactly one must press it (to signal they've been) and then
+    any agent can call TELL to claim all have visited. Reward is +1 if
+    correct, -1 if wrong. Obs per agent: [am_i_in_room, bulb_state] (2,).
+
+    Why it's interesting for MARC: agents must differentiate roles
+    (who presses vs who waits) from *identical* observations, which is
+    exactly the anti-redundancy / role-differentiation thesis. Scales
+    cleanly with N — harder coordination at larger N.
+
+    Action space: NOTHING=0, SWITCH_LIGHT=1, TELL=2 (3 actions).
+    Noop = NOTHING (action 0) for leave-one-out eval.
+    Episodes are very short (max_steps = 4N-6).
+    """
+
+    N_BY_NAME = {
+        "switch_riddle":   3,
+        "switch_riddle_3": 3,
+        "switch_riddle_4": 4,
+        "switch_riddle_5": 5,
+    }
+
+    def __init__(self, name="switch_riddle"):
+        self.name = name
+        self._N = self.N_BY_NAME[name]
+        e = self.make_env()
+        self.num_agents = e.num_agents
+        self.action_dim = 3   # NOTHING, SWITCH_LIGHT, TELL
+        self.noop_action = 0  # NOTHING (leave-one-out drop)
+        self.teammate_obs_visible = False  # agents see only own room flag + bulb
+
+    def make_env(self, **env_kwargs):
+        kw = dict(num_agents=self._N)
+        kw.update(env_kwargs)
+        return jaxmarl.make("switch_riddle", **kw)
+
+    def obs_shape(self, env):
+        return env.observation_space(env.agents[0]).shape
+
+    def obs_encoder(self) -> nn.Module:
+        return MLPEncoder(activation="relu")
+
+
 class MinecraftAdapter:
     """Typed stub (proposal stretch goal). Proves the abstraction is general;
     intentionally not implemented until MARC works on Overcooked."""
@@ -495,6 +540,8 @@ for _smax in SMAXAdapter.SCENARIOS:
 for _han in HanabiAdapter.N_BY_NAME:
     ADAPTERS[_han] = (lambda n=_han: HanabiAdapter(n))
     ADAPTERS[_han + "_id"] = (lambda n=_han: HanabiAdapter(n + "_id"))
+for _sr in SwitchRiddleAdapter.N_BY_NAME:
+    ADAPTERS[_sr] = (lambda n=_sr: SwitchRiddleAdapter(n))
 
 
 def get_adapter(name: str) -> EnvAdapter:
