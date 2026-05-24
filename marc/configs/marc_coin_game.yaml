@@ -1,0 +1,30 @@
+# Coin Game config — 2-agent cooperative grid-world (Lerer & Peysakhovich 2017).
+# Episodes are short (max_steps = num_inner_steps = 10 steps).
+# NUM_STEPS=32 covers ~3 full episodes per rollout; more envs compensates.
+LR: 0.0005
+NUM_ENVS: 128
+NUM_STEPS: 32
+TOTAL_TIMESTEPS: 5.0e6
+UPDATE_EPOCHS: 4
+NUM_MINIBATCHES: 16
+GAMMA: 0.99
+GAE_LAMBDA: 0.95
+CLIP_EPS: 0.2
+ENT_COEF: 0.01
+VF_COEF: 0.5
+MAX_GRAD_NORM: 0.5
+ACTIVATION: relu
+REW_SHAPING_HORIZON: 2.5e6   # unused (no shaped reward); harmless
+ANNEAL_LR: true
+SEED: 30
+NUM_SEEDS: 1
+
+ADAPTER: coin_game
+NETWORK_KIND: vanilla
+HISTORY: 16
+LATENT_DIM: 32
+LAMBDA_AUX: 0.0
+BETA: 1.0
+ZERO_TEAMMATE: false
+ENV_KWARGS:
+  shared_rewards: true

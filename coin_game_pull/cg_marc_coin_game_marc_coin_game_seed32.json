@@ -1,0 +1,33 @@
+{
+  "tag": "cg_marc_coin_game",
+  "network_kind": "marc",
+  "layout": "coin_game",
+  "seed": 32,
+  "total_timesteps": 5000000.0,
+  "final_sparse_return": 10.898852348327637,
+  "max_return": 11.0234375,
+  "train_minutes": 6.83,
+  "device": "cuda:0",
+  "lambda_aux": 0,
+  "beta": 1.0,
+  "aux_norm": false,
+  "aux_anneal": "none",
+  "aux_gate": false,
+  "m_l_align": 75.4729,
+  "m_l_div": 0.9719,
+  "m_actor_loss": -0.0004,
+  "m_value_loss": 0.5209,
+  "m_aux_eff": 0.0,
+  "eval": {
+    "eval_return": 10.766,
+    "loo_drop": {
+      "0": 6.188,
+      "1": 6.438
+    },
+    "loo_drop_min": 6.188,
+    "loo_drop_mean": 6.313,
+    "role_similarity": 0.9731,
+    "behavioral_sep": 0.0009,
+    "eval_episodes": 64
+  }
+}

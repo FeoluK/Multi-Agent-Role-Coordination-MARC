@@ -460,6 +460,42 @@ class CraftaxCoopAdapter:
         return CraftaxMLPEncoder(activation="relu")
 
 
+class CoinGameAdapter:
+    """Coin Game (Lerer & Peysakhovich 2017) — a 2-agent grid-world social
+    dilemma on a 3×3 grid. Red and blue players collect coins; picking up
+    the other player's coin is penalised. With shared_rewards=True the task
+    becomes fully cooperative: agents must coordinate collection to maximise
+    joint reward, which requires role differentiation (who collects which
+    coin). Always exactly 2 agents.
+
+    Obs per agent: (36,) flat vector encoding both player positions and both
+    coin positions on the 3×3 grid. Action space: Discrete(5) — right, left,
+    up, down, stay. Noop = stay (action 4) for leave-one-out eval.
+    Episodes are short (max_steps = num_inner_steps = 10).
+    """
+
+    name = "coin_game"
+    num_agents = 2
+    action_dim = 5    # right=0, left=1, up=2, down=3, stay=4
+    noop_action = 4   # stay
+    teammate_obs_visible = True  # obs encodes both agent positions
+
+    def make_env(self, **env_kwargs):
+        kw = dict(shared_rewards=True)
+        kw.update(env_kwargs)
+        env = jaxmarl.make("coin_game", **kw)
+        if not hasattr(env, "max_steps"):
+            # num_inner_steps is a closure var, not stored on the env object
+            env.max_steps = kw.get("num_inner_steps", 10)
+        return env
+
+    def obs_shape(self, env):
+        return env.observation_space(env.agents[0]).shape
+
+    def obs_encoder(self) -> nn.Module:
+        return MLPEncoder(activation="relu")
+
+
 class SwitchRiddleAdapter:
     """Switch Riddle (Sukhbaatar et al. 2016) — a minimal cooperative
     signalling task. N agents take turns visiting a room with a light
@@ -528,6 +564,7 @@ class MinecraftAdapter:
 # name -> zero-arg factory returning an adapter instance
 ADAPTERS = {
     "overcooked": OvercookedAdapter,
+    "coin_game": CoinGameAdapter,
     "craftax_coop": CraftaxCoopAdapter,
     "minecraft": MinecraftAdapter,
 }

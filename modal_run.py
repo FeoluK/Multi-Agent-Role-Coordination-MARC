@@ -93,6 +93,8 @@ def _config_for(manifest: str) -> str:
         return "configs/marc_mpe.yaml"
     if "switch_riddle" in m or "switch riddle" in m:
         return "configs/marc_switch_riddle.yaml"
+    if "coin_game" in m or "coin game" in m:
+        return "configs/marc_coin_game.yaml"
     return "configs/marc_overcooked.yaml"
 
 
