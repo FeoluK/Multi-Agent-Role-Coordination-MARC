@@ -48,6 +48,7 @@ SMAX_CELLS = [("3m",         "smax_3m"),
 SMAX_GROUPS = {
     "vanilla":   [(f"smax_vanilla_{lay}", lay) for (_, lay) in SMAX_CELLS],
     "marc_arch": [(f"smax_marc_{lay}",    lay) for (_, lay) in SMAX_CELLS],
+    "mappo":     [(f"smax_mappo_{lay}",   lay) for (_, lay) in SMAX_CELLS],
 }
 # Hanabi N-scaling — partial-info, turn-based card game; the most
 # structurally different cross-domain test. N=4 skipped (hand_size
@@ -56,6 +57,7 @@ HANABI_CELLS = [("2p", "hanabi_2"), ("3p", "hanabi_3"), ("5p", "hanabi_5")]
 HANABI_GROUPS = {
     "vanilla":   [(f"hanabi_vanilla_{lay}", lay) for (_, lay) in HANABI_CELLS],
     "marc_arch": [(f"hanabi_marc_{lay}",    lay) for (_, lay) in HANABI_CELLS],
+    "mappo":     [(f"hanabi_mappo_{lay}",   lay) for (_, lay) in HANABI_CELLS],
 }
 # MPE simple_spread, scaling in team size N (the clean fixed-aux story).
 MPE_NS = [3, 6, 9]
@@ -211,7 +213,8 @@ def main(results_dir):
                  cells, SMAX_GROUPS, "vanilla")
     for label, lay in SMAX_CELLS:
         g = {"vanilla":   [(f"smax_vanilla_{lay}", lay)],
-             "marc_arch": [(f"smax_marc_{lay}",    lay)]}
+             "marc_arch": [(f"smax_marc_{lay}",    lay)],
+             "mappo":     [(f"smax_mappo_{lay}",   lay)]}
         report_block(f"SMAX  scenario={label}", cells, g, "vanilla")
     # SMAX 8m budget ladder (smax_followup_manifest.py): is the N=8 tie
     # an undertraining artifact? Compare vanilla vs marc within each
@@ -248,7 +251,8 @@ def main(results_dir):
                  cells, HANABI_GROUPS, "vanilla")
     for label, lay in HANABI_CELLS:
         g = {"vanilla":   [(f"hanabi_vanilla_{lay}", lay)],
-             "marc_arch": [(f"hanabi_marc_{lay}",    lay)]}
+             "marc_arch": [(f"hanabi_marc_{lay}",    lay)],
+             "mappo":     [(f"hanabi_mappo_{lay}",   lay)]}
         report_block(f"Hanabi  N={label}", cells, g, "vanilla")
     report_block("MPE simple_spread (N=3,6,9 pooled): "
                  "vanilla vs marc-arch vs marc-normgateup",

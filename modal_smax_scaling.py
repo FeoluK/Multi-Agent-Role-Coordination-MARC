@@ -87,10 +87,10 @@ def _parse_spec(line: str) -> dict:
 
 
 @app.function(
-    gpu="A10G",
+    gpu="A100-80GB",
     timeout=6 * 3600,                 # generous; 5e6 steps usually <2h
     volumes={RESULTS_DIR: results_vol},
-    max_containers=8,                 # safe default; override via --max-containers
+    max_containers=3,                 # A100-80GB capacity; smaller pool to reduce preemption
 )
 def run_one(idx: int,
             manifest: str = "smax_scaling_manifest.py",

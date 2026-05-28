@@ -1,0 +1,34 @@
+{
+  "tag": "smax_mappo_smax_3m",
+  "network_kind": "mappo",
+  "layout": "smax_3m",
+  "seed": 32,
+  "total_timesteps": 5000000.0,
+  "final_sparse_return": 1.8505403995513916,
+  "max_return": 1.8967814445495605,
+  "train_minutes": 1.06,
+  "device": "cuda:0",
+  "lambda_aux": 0.1,
+  "beta": 1.0,
+  "aux_norm": false,
+  "aux_anneal": "none",
+  "aux_gate": false,
+  "m_l_align": 0.0,
+  "m_l_div": 0.0,
+  "m_actor_loss": -0.0004,
+  "m_value_loss": 0.2252,
+  "m_aux_eff": 0.0,
+  "eval": {
+    "eval_return": 4.068,
+    "loo_drop": {
+      "ally_0": 2.196,
+      "ally_1": 2.126,
+      "ally_2": 1.996
+    },
+    "loo_drop_min": 1.996,
+    "loo_drop_mean": 2.106,
+    "role_similarity": null,
+    "behavioral_sep": 0.0004,
+    "eval_episodes": 64
+  }
+}

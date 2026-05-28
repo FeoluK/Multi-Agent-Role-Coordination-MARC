@@ -1,0 +1,33 @@
+{
+  "tag": "hanabi_mappo_hanabi_2",
+  "network_kind": "mappo",
+  "layout": "hanabi_2",
+  "seed": 32,
+  "total_timesteps": 50000000.0,
+  "final_sparse_return": 12.781237602233887,
+  "max_return": 13.10919189453125,
+  "train_minutes": 10.8,
+  "device": "cuda:0",
+  "lambda_aux": 0.1,
+  "beta": 1.0,
+  "aux_norm": false,
+  "aux_anneal": "none",
+  "aux_gate": false,
+  "m_l_align": 0.0,
+  "m_l_div": 0.0,
+  "m_actor_loss": -0.0001,
+  "m_value_loss": 0.2219,
+  "m_aux_eff": 0.0,
+  "eval": {
+    "eval_return": 17.234,
+    "loo_drop": {
+      "agent_0": 16.156,
+      "agent_1": 16.625
+    },
+    "loo_drop_min": 16.156,
+    "loo_drop_mean": 16.39,
+    "role_similarity": null,
+    "behavioral_sep": 0.0009,
+    "eval_episodes": 64
+  }
+}
