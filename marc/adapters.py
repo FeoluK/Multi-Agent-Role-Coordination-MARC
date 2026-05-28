@@ -64,6 +64,72 @@ class AgentIDWrapper:
         return getattr(self._env, name)
 
 
+class StripUnitTypeBitsWrapper:
+    """SMAX scope-condition flip test. Zeros out the per-unit
+    `unit_type_bits` slots in every agent's obs (the last
+    `unit_type_bits` entries of each unit-feature block + of the own
+    block), erasing the natural role-disambiguating feature SMAX hands
+    vanilla. If the scope condition holds, MARC's gap over vanilla
+    should reappear on `2s3z_stripped` because vanilla can no longer
+    learn role-specialised behaviour directly from the obs.
+    Pure jnp + delegation -> safe under jax.vmap(reset/step).
+    """
+
+    def __init__(self, env):
+        self._env = env
+        self.agents = env.agents
+        self.num_agents = env.num_agents
+        self.max_steps = env.max_steps
+        # Compute the obs indices to zero out, statically.
+        # Per smax_env.py: obs = [ally_blocks; enemy_blocks; own_block].
+        # Each unit (ally/enemy) block has len(unit_features) entries
+        # whose LAST `unit_type_bits` are the type one-hot. Own block
+        # has len(own_features) entries with the LAST `unit_type_bits`
+        # being the own-type one-hot.
+        n_allies = int(env.num_allies)
+        n_enemies = int(env.num_enemies)
+        unit_dim = len(env.unit_features)
+        own_dim = len(env.own_features)
+        ut = int(env.unit_type_bits)
+        idx = []
+        # visible-ally blocks (num_allies - 1 of them per agent)
+        for k in range(n_allies - 1):
+            base = k * unit_dim
+            for b in range(ut):
+                idx.append(base + unit_dim - ut + b)
+        # enemy blocks
+        for k in range(n_enemies):
+            base = (n_allies - 1) * unit_dim + k * unit_dim
+            for b in range(ut):
+                idx.append(base + unit_dim - ut + b)
+        # own block
+        own_base = (n_allies - 1) * unit_dim + n_enemies * unit_dim
+        for b in range(ut):
+            idx.append(own_base + own_dim - ut + b)
+        self._strip_idx = jnp.asarray(idx, dtype=jnp.int32)
+
+    def _strip(self, obs_vec):
+        return obs_vec.at[..., self._strip_idx].set(0.0)
+
+    def _aug(self, obs):
+        return {a: self._strip(obs[a]) for a in self.agents}
+
+    def reset(self, key):
+        obs, state = self._env.reset(key)
+        return self._aug(obs), state
+
+    def step(self, key, state, actions):
+        obs, state, rew, done, info = self._env.step(key, state, actions)
+        return self._aug(obs), state, rew, done, info
+
+    def observation_space(self, agent=None):
+        return self._env.observation_space(
+            agent if agent is not None else self.agents[0])
+
+    def __getattr__(self, name):
+        return getattr(self._env, name)
+
+
 # --------------------------------------------------------------------------- #
 # ObsEncoder modules (the ONLY env-coupled network piece)                      #
 # --------------------------------------------------------------------------- #
@@ -260,7 +326,12 @@ class SMAXAdapter:
     def __init__(self, name="smax_3m"):
         self.name = name
         self._agent_id = name.endswith("_id")
-        base = name[:-3] if self._agent_id else name
+        self._strip_unit_type = name.endswith("_stripped")
+        base = name
+        if self._agent_id:
+            base = name[:-3]
+        elif self._strip_unit_type:
+            base = name[:-len("_stripped")]
         if base not in self.SCENARIOS:
             raise KeyError(f"unknown SMAX adapter {base!r}; "
                            f"have {sorted(self.SCENARIOS)}")
@@ -277,7 +348,11 @@ class SMAXAdapter:
         scenario = map_name_to_scenario(self._scenario_name)
         env = jaxmarl.make("HeuristicEnemySMAX",
                            scenario=scenario, **env_kwargs)
-        return AgentIDWrapper(env) if self._agent_id else env
+        if self._strip_unit_type:
+            env = StripUnitTypeBitsWrapper(env)
+        if self._agent_id:
+            env = AgentIDWrapper(env)
+        return env
 
     def obs_shape(self, env):
         return env.observation_space(env.agents[0]).shape
@@ -574,6 +649,8 @@ for _mpe in MPEAdapter.N_BY_NAME:
 for _smax in SMAXAdapter.SCENARIOS:
     ADAPTERS[_smax] = (lambda n=_smax: SMAXAdapter(n))
     ADAPTERS[_smax + "_id"] = (lambda n=_smax: SMAXAdapter(n + "_id"))
+    ADAPTERS[_smax + "_stripped"] = (
+        lambda n=_smax: SMAXAdapter(n + "_stripped"))
 for _han in HanabiAdapter.N_BY_NAME:
     ADAPTERS[_han] = (lambda n=_han: HanabiAdapter(n))
     ADAPTERS[_han + "_id"] = (lambda n=_han: HanabiAdapter(n + "_id"))

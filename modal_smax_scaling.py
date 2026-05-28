@@ -94,6 +94,7 @@ def _parse_spec(line: str) -> dict:
 )
 def run_one(idx: int,
             manifest: str = "smax_scaling_manifest.py",
+            config: str = "configs/marc_smax.yaml",
             total_timesteps: float | None = None) -> dict:
     """One manifest index -> one MARC training run -> JSON+npz on the volume.
 
@@ -119,7 +120,7 @@ def run_one(idx: int,
     # 2. assemble run.py invocation (same shape FarmShare's *.sbatch use)
     cmd = [
         _sys.executable, "run.py",
-        "--config", "configs/marc_smax.yaml",
+        "--config", config,
         "--network-kind", spec["KIND"],
         "--seed", spec["SEED"],
         "--tag", f"{spec['TAG']}_{spec['ADAPTER']}",
@@ -154,6 +155,7 @@ def main(
     gpu: str = "A10G",
     max_containers: int = 8,
     manifest: str = "smax_scaling_manifest.py",
+    config: str = "configs/marc_smax.yaml",
 ):
     """Drive any SMAX manifest from your laptop. No GPU/JAX needed
     locally — we only call the manifest (pure stdlib) to enumerate."""
@@ -183,7 +185,8 @@ def main(
 
     if smoke:
         # Tiny budget so the smoke is cheap (~5 min, ~$0.10 on A10G).
-        result = fn.remote(0, manifest=manifest, total_timesteps=50_000)
+        result = fn.remote(0, manifest=manifest, config=config,
+                           total_timesteps=50_000)
         print("[smoke result]", json.dumps(result, indent=2,
                                            default=str), flush=True)
         return
@@ -191,8 +194,8 @@ def main(
     # Stream completions as they finish.
     n_done = 0
     n_fail = 0
-    # starmap accepts (idx, kwargs); use a generator of (idx, manifest=...)
-    inputs = [(i, manifest) for i in ids]
+    # starmap accepts (idx, kwargs); use a generator of (idx, manifest, config)
+    inputs = [(i, manifest, config) for i in ids]
     for r in fn.starmap(inputs, return_exceptions=True):
         if isinstance(r, Exception):
             n_fail += 1
