@@ -194,6 +194,61 @@ class HistoryEncoder(nn.Module):
         return z, cur_feat
 
 
+class GRUEncoder(nn.Module):
+    """Recurrent (GRU) analogue of HistoryEncoder: encodes each frame, embeds
+    actions, runs a GRU over the length-H window, returns the last hidden state
+    and the current-frame features. Used by the memory-matched recurrent
+    baseline (kind='gru')."""
+
+    obs_encoder: nn.Module
+    action_dim: int
+    latent_dim: int = 32
+
+    @nn.compact
+    def __call__(self, obs_window, act_window, pad_mask):
+        B, Hs = obs_window.shape[0], obs_window.shape[1]
+        flat = obs_window.reshape((B * Hs,) + obs_window.shape[2:])
+        feats = self.obs_encoder(flat).reshape(B, Hs, -1)
+        a_emb = nn.Embed(self.action_dim + 1, 16)(act_window + 1)  # 0 = pad
+        tokens = jnp.concatenate([feats, a_emb], axis=-1)          # (B,H,D)
+        z_seq = nn.RNN(nn.GRUCell(features=self.latent_dim))(tokens)  # (B,H,Z)
+        z = z_seq[:, -1, :]                                        # last hidden
+        cur_feat = feats[:, -1, :]
+        return z, cur_feat
+
+
+class GruActorCritic(nn.Module):
+    """Recurrent IPPO baseline: GRU over the history window -> policy/critic on
+    [current_feat ; gru_hidden]. Memory-matched to MARC's self-encoder but with
+    NO teammate inferencer and NO auxiliary -- isolates 'generic recurrent
+    memory' from MARC's specific architecture (reviewer-requested control)."""
+
+    obs_encoder: nn.Module
+    action_dim: int
+    latent_dim: int = 32
+    activation: str = "relu"
+
+    @nn.compact
+    def __call__(self, obs_window, act_window, pad_mask):
+        act = nn.relu if self.activation == "relu" else nn.tanh
+        z, cur_feat = GRUEncoder(
+            obs_encoder=self.obs_encoder, action_dim=self.action_dim,
+            latent_dim=self.latent_dim, name="gru_enc")(
+            obs_window, act_window, pad_mask)
+        h = jnp.concatenate([cur_feat, z], axis=-1)
+        a = act(nn.Dense(64, kernel_init=orthogonal(np.sqrt(2)),
+                         bias_init=constant(0.0))(h))
+        logits = nn.Dense(self.action_dim, kernel_init=orthogonal(0.01),
+                          bias_init=constant(0.0))(a)
+        import distrax
+        pi = distrax.Categorical(logits=logits)
+        c = act(nn.Dense(64, kernel_init=orthogonal(np.sqrt(2)),
+                         bias_init=constant(0.0))(h))
+        v = nn.Dense(1, kernel_init=orthogonal(1.0),
+                     bias_init=constant(0.0))(c)
+        return pi, jnp.squeeze(v, axis=-1), {"z_self": z}
+
+
 class MarcSelfActorCritic(nn.Module):
     """Task 5 network: self-encoder + policy/critic conditioned on
     [current_feat ; z_self]. No teammate inferencer yet."""
@@ -265,6 +320,10 @@ class MarcActorCritic(nn.Module):
     latent_dim: int = 32
     activation: str = "relu"
     zero_teammate: bool = False   # ablation: architectural contribution test
+    latent_gate: bool = False     # ReZero-style gate: scale latents by a learned
+                                  # scalar init 0, so the policy STARTS as vanilla
+                                  # (cur_feat only) and opens the gate only if the
+                                  # latents reduce loss. Insurance: MARC >= vanilla.
 
     @nn.compact
     def __call__(self, ow, aw, m, tow, taw, tm, compute_aux: bool = True):
@@ -309,7 +368,17 @@ class MarcActorCritic(nn.Module):
 
         query = jnp.concatenate([cur_feat, z_self], axis=-1)
         ctx = AttentionPool(dim=self.latent_dim, name="pool")(query, z_team)
-        h = jnp.concatenate([cur_feat, z_self, ctx], axis=-1)
+        if self.latent_gate:
+            # ReZero gates init at 0 => policy input starts == [cur_feat, 0, 0],
+            # i.e. behaves like vanilla; gradient can open the gates if the
+            # latents help. Guarantees a learnable fallback to vanilla.
+            g_self = self.param("gate_self", nn.initializers.zeros, ())
+            g_ctx = self.param("gate_ctx", nn.initializers.zeros, ())
+            z_self_p = g_self * z_self
+            ctx_p = g_ctx * ctx
+        else:
+            z_self_p, ctx_p = z_self, ctx
+        h = jnp.concatenate([cur_feat, z_self_p, ctx_p], axis=-1)
 
         a = nn.Dense(64, kernel_init=orthogonal(np.sqrt(2)),
                      bias_init=constant(0.0))(h)
@@ -329,8 +398,30 @@ class MarcActorCritic(nn.Module):
         return pi, jnp.squeeze(val, axis=-1), aux
 
 
+def is_recurrent_baseline(kind: str) -> bool:
+    return kind == "gru"
+
+
+def is_independent(kind: str) -> bool:
+    """Independent IPPO: one VanillaActorCritic param set PER agent (no
+    sharing). Used to measure the Parameter-Sharing Gap (PSG)."""
+    return kind == "ips"
+
+
+def ips_apply(network, params_stacked, ob, agent_ids):
+    """Apply independent per-agent params. params_stacked has a leading
+    agent axis (n_agents, ...); ob is (B, *obs_shape); agent_ids is (B,)
+    giving each row's agent index. Returns (pi, value) where pi has
+    batched logits (B, action_dim). Gather's VJP scatter-adds gradients
+    back to each agent's own params, so the agents are truly independent."""
+    import jax
+    per_ex = jax.tree_util.tree_map(lambda x: x[agent_ids], params_stacked)
+    pi, v = jax.vmap(network.apply, in_axes=(0, 0))(per_ex, ob)
+    return pi, v
+
+
 def needs_history(kind: str) -> bool:
-    return kind in ("marc_self", "marc")
+    return kind in ("marc_self", "marc", "gru")
 
 
 def needs_teammate(kind: str) -> bool:
@@ -353,7 +444,9 @@ def build_network(config, adapter):
       marc_self : apply(params, obs_w, act_w, mask)  -> (pi, value, z_self)
     """
     kind = config.get("NETWORK_KIND", "vanilla")
-    if kind == "vanilla":
+    if kind in ("vanilla", "ips"):
+        # ips uses the identical architecture as vanilla; independence is
+        # realised by giving each agent its own param set (see ips_apply).
         return VanillaActorCritic(
             obs_encoder=adapter.obs_encoder(),
             action_dim=adapter.action_dim,
@@ -369,6 +462,12 @@ def build_network(config, adapter):
             action_dim=adapter.action_dim,
             n_agents=adapter.num_agents,
             activation=config["ACTIVATION"])
+    if kind == "gru":
+        return GruActorCritic(
+            obs_encoder=adapter.obs_encoder(),
+            action_dim=adapter.action_dim,
+            latent_dim=config.get("LATENT_DIM", 32),
+            activation=config["ACTIVATION"])
     if kind == "marc_self":
         return MarcSelfActorCritic(
             obs_encoder=adapter.obs_encoder(),
@@ -382,5 +481,6 @@ def build_network(config, adapter):
             action_dim=adapter.action_dim,
             latent_dim=config.get("LATENT_DIM", 32),
             activation=config["ACTIVATION"],
-            zero_teammate=bool(config.get("ZERO_TEAMMATE", False)))
+            zero_teammate=bool(config.get("ZERO_TEAMMATE", False)),
+            latent_gate=bool(config.get("LATENT_GATE", False)))
     raise ValueError(f"unknown NETWORK_KIND {kind!r}")
