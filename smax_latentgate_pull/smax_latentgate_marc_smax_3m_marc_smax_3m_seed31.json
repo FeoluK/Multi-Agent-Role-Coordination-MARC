@@ -1,0 +1,34 @@
+{
+  "tag": "smax_latentgate_marc_smax_3m",
+  "network_kind": "marc",
+  "layout": "smax_3m",
+  "seed": 31,
+  "total_timesteps": 5000000.0,
+  "final_sparse_return": 1.6127042770385742,
+  "max_return": 1.670027732849121,
+  "train_minutes": 6.7,
+  "device": "cuda:0",
+  "lambda_aux": 0,
+  "beta": 1.0,
+  "aux_norm": false,
+  "aux_anneal": "none",
+  "aux_gate": false,
+  "m_l_align": 81.2271,
+  "m_l_div": 0.5274,
+  "m_actor_loss": -0.0012,
+  "m_value_loss": 0.0795,
+  "m_aux_eff": 0.0,
+  "eval": {
+    "eval_return": 2.333,
+    "loo_drop": {
+      "ally_0": 1.067,
+      "ally_1": 1.029,
+      "ally_2": 0.969
+    },
+    "loo_drop_min": 0.969,
+    "loo_drop_mean": 1.022,
+    "role_similarity": 0.5728,
+    "behavioral_sep": 0.0003,
+    "eval_episodes": 64
+  }
+}
