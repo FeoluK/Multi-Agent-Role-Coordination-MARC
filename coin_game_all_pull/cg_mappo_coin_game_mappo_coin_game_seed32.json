@@ -1,0 +1,33 @@
+{
+  "tag": "cg_mappo_coin_game",
+  "network_kind": "mappo",
+  "layout": "coin_game",
+  "seed": 32,
+  "total_timesteps": 5000000.0,
+  "final_sparse_return": 10.8546142578125,
+  "max_return": 11.004638671875,
+  "train_minutes": 0.63,
+  "device": "cuda:0",
+  "lambda_aux": 0.0,
+  "beta": 1.0,
+  "aux_norm": false,
+  "aux_anneal": "none",
+  "aux_gate": false,
+  "m_l_align": 0.0,
+  "m_l_div": 0.0,
+  "m_actor_loss": -0.0001,
+  "m_value_loss": 6.9558,
+  "m_aux_eff": 0.0,
+  "eval": {
+    "eval_return": 10.688,
+    "loo_drop": {
+      "0": 5.875,
+      "1": 6.219
+    },
+    "loo_drop_min": 5.875,
+    "loo_drop_mean": 6.047,
+    "role_similarity": null,
+    "behavioral_sep": 0.0003,
+    "eval_episodes": 64
+  }
+}

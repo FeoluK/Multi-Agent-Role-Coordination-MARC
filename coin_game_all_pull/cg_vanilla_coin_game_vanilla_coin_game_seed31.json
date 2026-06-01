@@ -1,0 +1,33 @@
+{
+  "tag": "cg_vanilla_coin_game",
+  "network_kind": "vanilla",
+  "layout": "coin_game",
+  "seed": 31,
+  "total_timesteps": 5000000.0,
+  "final_sparse_return": 9.917798042297363,
+  "max_return": 10.07568359375,
+  "train_minutes": 0.48,
+  "device": "cuda:0",
+  "lambda_aux": 0.0,
+  "beta": 1.0,
+  "aux_norm": false,
+  "aux_anneal": "none",
+  "aux_gate": false,
+  "m_l_align": 0.0,
+  "m_l_div": 0.0,
+  "m_actor_loss": -0.0001,
+  "m_value_loss": 5.8753,
+  "m_aux_eff": 0.0,
+  "eval": {
+    "eval_return": 9.672,
+    "loo_drop": {
+      "0": 5.391,
+      "1": 5.469
+    },
+    "loo_drop_min": 5.391,
+    "loo_drop_mean": 5.43,
+    "role_similarity": null,
+    "behavioral_sep": 0.0009,
+    "eval_episodes": 64
+  }
+}

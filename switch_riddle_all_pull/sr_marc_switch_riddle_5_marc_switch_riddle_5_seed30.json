@@ -1,0 +1,36 @@
+{
+  "tag": "sr_marc_switch_riddle_5",
+  "network_kind": "marc",
+  "layout": "switch_riddle_5",
+  "seed": 30,
+  "total_timesteps": 2000000.0,
+  "final_sparse_return": 0.7838134765625,
+  "max_return": 0.824951171875,
+  "train_minutes": 14.25,
+  "device": "cuda:0",
+  "lambda_aux": 0,
+  "beta": 1.0,
+  "aux_norm": false,
+  "aux_anneal": "none",
+  "aux_gate": false,
+  "m_l_align": 67.6348,
+  "m_l_div": 0.1602,
+  "m_actor_loss": -0.0007,
+  "m_value_loss": 0.0457,
+  "m_aux_eff": 0.0,
+  "eval": {
+    "eval_return": 0.859,
+    "loo_drop": {
+      "agent_0": 0.031,
+      "agent_1": 0.047,
+      "agent_2": 0.062,
+      "agent_3": 0.078,
+      "agent_4": 0.031
+    },
+    "loo_drop_min": 0.031,
+    "loo_drop_mean": 0.05,
+    "role_similarity": 0.1902,
+    "behavioral_sep": 0.0002,
+    "eval_episodes": 64
+  }
+}
